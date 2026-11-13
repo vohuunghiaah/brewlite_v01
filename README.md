@@ -269,7 +269,7 @@ npm run build:backend
 - [x] Bộ lọc danh mục (5 danh mục) và tìm kiếm hoạt động trực tiếp.
 - [x] Đầy đủ 4 trạng thái giao diện: Success, Loading Skeleton (`animate-pulse`), Empty State, Error State kèm nút Thử lại.
 - [x] Nút "Tùy chỉnh" và "+" có phản hồi Toast thông báo rõ ràng về phạm vi Task 4/5.
-- [x] Đạt 100% kiểm thử: 21/21 Unit Tests pass, 6/6 E2E Tests pass, Lint 0 warnings/errors, Build thành công.
+- [x] Đạt 100% kiểm thử: 36/36 Unit & Component Tests pass, 6/6 E2E Tests pass, Lint 0 warnings/errors, Build thành công.
 - [x] Soạn thảo tài liệu nghiệm thu chi tiết `docs/TASK-03.md` kèm 4 ảnh chụp giao diện thực tế.
 
 ---
