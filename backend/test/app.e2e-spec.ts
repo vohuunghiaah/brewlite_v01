@@ -61,16 +61,18 @@ describe('BrewLite API (e2e)', () => {
       }
     });
 
-    it('/products (GET) should include wireframe products (Cà phê sữa, Americano, Cappuccino, Trà đào)', async () => {
+    it('/products (GET) should include wireframe products (Cà phê sữa đá, Americano, Cappuccino nóng, Trà đào cam sả)', async () => {
       const response = await request(app.getHttpServer())
         .get('/products')
         .expect(200);
 
       const productNames = response.body.map((p: { name: string }) => p.name);
-      expect(productNames).toContain('Cà phê sữa');
+      expect(productNames).toContain('Cà phê sữa đá');
       expect(productNames).toContain('Americano');
-      expect(productNames).toContain('Cappuccino');
-      expect(productNames).toContain('Trà đào');
+      expect(productNames).toContain('Cappuccino nóng');
+      expect(productNames).toContain('Trà đào cam sả');
+      expect(productNames).toContain('Cold Brew Muối');
+      expect(productNames).toContain('Bánh sừng bò sô-cô-la');
     });
 
     it('/products (GET) should have all unique product IDs', async () => {

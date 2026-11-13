@@ -1,52 +1,56 @@
 import { Product } from './products.types.js';
 
+/**
+ * Danh sách sản phẩm chính thức được đối chiếu và trích xuất trực tiếp
+ * từ thiết kế Figma Make App: https://www.figma.com/make/2bPJMAlevBhb3qpiYwGBnQ/BrewLite-Coffee-Ordering-App
+ */
 export const SAMPLE_PRODUCTS: readonly Product[] = Object.freeze([
   {
     id: 'coffee-001',
-    name: 'Cà phê sữa',
+    name: 'Cà phê sữa đá',
     price: 35000,
     imageUrl: '/products/coffee-001.svg',
-    category: 'Cà phê',
-    description: 'Cà phê pha phin truyền thống kết hợp cùng sữa đặc béo ngọt thơm ngon.',
+    category: 'Cà phê truyền thống',
+    description: 'Cà phê phin truyền thống pha với sữa đặc, đậm đà hương vị Việt Nam.',
   },
   {
     id: 'coffee-002',
     name: 'Americano',
     price: 40000,
     imageUrl: '/products/coffee-002.svg',
-    category: 'Cà phê',
-    description: 'Espresso đậm đà pha loãng với nước nóng, vị đắng thanh thoát.',
+    category: 'Cold Brew & Espresso',
+    description: 'Espresso pha loãng với nước nóng, thanh đậm và tinh tế.',
   },
   {
     id: 'coffee-003',
-    name: 'Cappuccino',
+    name: 'Cappuccino nóng',
     price: 45000,
     imageUrl: '/products/coffee-003.svg',
-    category: 'Cà phê',
-    description: 'Espresso hòa quyện sữa nóng với lớp bọt sữa bồng bềnh mịn màng.',
+    category: 'Cold Brew & Espresso',
+    description: 'Espresso với lớp bọt sữa dày mịn, vị cân bằng hoàn hảo.',
   },
   {
     id: 'tea-001',
-    name: 'Trà đào',
+    name: 'Trà đào cam sả',
     price: 39000,
     imageUrl: '/products/tea-001.svg',
-    category: 'Trà',
-    description: 'Trà đen ướp hương đào thơm mát kèm miếng đào ngâm giòn ngọt thanh nhẹ.',
+    category: 'Trà trái cây',
+    description: 'Trà xanh pha trái đào tươi, cam và sả, thơm mát sảng khoái.',
   },
   {
     id: 'coffee-004',
-    name: 'Espresso',
-    price: 30000,
+    name: 'Cold Brew Muối',
+    price: 42000,
     imageUrl: '/products/coffee-004.svg',
-    category: 'Cà phê',
-    description: 'Cà phê nguyên chất chiết xuất áp suất cao với lớp crema dày quyến rũ.',
+    category: 'Cold Brew & Espresso',
+    description: 'Cold brew ngâm 24 giờ với kem muối béo ngậy, phong cách Đài Loan.',
   },
   {
-    id: 'tea-002',
-    name: 'Trà sữa trân châu',
-    price: 42000,
-    imageUrl: '/products/tea-002.svg',
-    category: 'Trà',
-    description: 'Trà sữa đậm vị hồng trà truyền thống hòa quyện cùng trân châu dẻo dai.',
+    id: 'bakery-001',
+    name: 'Bánh sừng bò sô-cô-la',
+    price: 35000,
+    imageUrl: '/products/bakery-001.svg',
+    category: 'Bánh ngọt',
+    description: 'Bánh sừng bò bơ Pháp nhân sô-cô-la đen, nướng giòn tươi mỗi sáng.',
   },
 ]);

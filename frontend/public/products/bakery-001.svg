@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100%" height="100%">
+  <rect width="200" height="200" rx="24" fill="#FFFDF8"/>
+  <!-- Croissant body base -->
+  <path d="M40 135 C55 105 80 85 100 85 C120 85 145 105 160 135 C150 145 130 148 100 148 C70 148 50 145 40 135 Z" fill="#D78F52" stroke="#B06A32" stroke-width="4"/>
+  <!-- Middle croissant pastry layer -->
+  <path d="M60 115 C75 92 90 80 100 80 C110 80 125 92 140 115 C130 128 115 132 100 132 C85 132 70 128 60 115 Z" fill="#F4B266" stroke="#B06A32" stroke-width="3"/>
+  <!-- Central golden crust ridge -->
+  <ellipse cx="100" cy="100" rx="22" ry="26" fill="#F8C986" stroke="#B06A32" stroke-width="3"/>
+  <!-- Chocolate drizzle / chocolate filling accent -->
+  <path d="M85 92 Q95 98 90 108 Q100 114 96 122" fill="none" stroke="#3E2723" stroke-width="4" stroke-linecap="round"/>
+  <path d="M110 92 Q105 98 110 108 Q102 114 105 122" fill="none" stroke="#3E2723" stroke-width="4" stroke-linecap="round"/>
+  <!-- Pastry flaky flakes -->
+  <circle cx="80" cy="130" r="2.5" fill="#B06A32"/>
+  <circle cx="120" cy="130" r="2.5" fill="#B06A32"/>
+  <circle cx="95" cy="140" r="2" fill="#B06A32"/>
+</svg>
