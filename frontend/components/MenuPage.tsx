@@ -12,14 +12,29 @@ import ProductGrid from './ProductGrid';
 import SearchBar from './SearchBar';
 import ToastNotice from './ToastNotice';
 
-export default function MenuPage() {
+export interface MenuPageProps {
+  onNotice?: (message: string) => void;
+}
+
+export default function MenuPage({ onNotice }: MenuPageProps) {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] =
     useState<CategoryFilter>('Tất cả');
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [notice, setNotice] = useState<string | null>(null);
+  const [localNotice, setLocalNotice] = useState<string | null>(null);
+
+  const showNotice = useCallback(
+    (msg: string) => {
+      if (onNotice) {
+        onNotice(msg);
+      } else {
+        setLocalNotice(msg);
+      }
+    },
+    [onNotice],
+  );
 
   const executeFetch = useCallback(async () => {
     try {
@@ -78,14 +93,14 @@ export default function MenuPage() {
   );
 
   const handleCustomize = (product: Product) => {
-    setNotice(
-      `Đã chọn món "${product.name}". Màn hình tùy chỉnh Size (S/M/L) và Topping sẽ được triển khai ở Task 4!`,
+    showNotice(
+      `Tính năng tùy chỉnh Size (S/M/L) và Topping cho món "${product.name}" sẽ được triển khai ở Task 4.`,
     );
   };
 
   const handleQuickAdd = (product: Product) => {
-    setNotice(
-      `Món "${product.name}" đã được ghi nhận. Tính năng Giỏ hàng và Đặt món sẽ được triển khai ở Task 5!`,
+    showNotice(
+      `Tính năng thêm nhanh món "${product.name}" vào Giỏ hàng sẽ được triển khai ở Task 5.`,
     );
   };
 
@@ -136,8 +151,13 @@ export default function MenuPage() {
         )}
       </div>
 
-      {/* Toast Notice */}
-      <ToastNotice message={notice} onClose={() => setNotice(null)} />
+      {/* Fallback Toast Notice if onNotice is not provided */}
+      {!onNotice && (
+        <ToastNotice
+          message={localNotice}
+          onClose={() => setLocalNotice(null)}
+        />
+      )}
     </main>
   );
 }
