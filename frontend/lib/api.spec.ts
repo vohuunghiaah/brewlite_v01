@@ -5,6 +5,8 @@ import {
   filterProducts,
   formatVND,
   getApiBaseUrl,
+  validateProduct,
+  validateProductList,
 } from './api';
 
 const MOCK_PRODUCTS: Product[] = [
@@ -48,7 +50,7 @@ describe('Frontend API & Utilities', () => {
       expect(getApiBaseUrl()).toBe('http://localhost:3001');
     });
 
-    it('should use NEXT_PUBLIC_API_URL when provided', () => {
+    it('should use NEXT_PUBLIC_API_URL when provided and strip trailing slash', () => {
       process.env.NEXT_PUBLIC_API_URL = 'http://api.brewlite.local:8080/';
       expect(getApiBaseUrl()).toBe('http://api.brewlite.local:8080');
     });
@@ -63,6 +65,130 @@ describe('Frontend API & Utilities', () => {
     it('should return 0đ for zero or invalid input', () => {
       expect(formatVND(0)).toBe('0đ');
       expect(formatVND(NaN)).toBe('0đ');
+    });
+  });
+
+  describe('Runtime Data Validation (validateProduct & validateProductList)', () => {
+    it('should accept a completely valid product', () => {
+      const valid = {
+        id: 'coffee-001',
+        name: 'Cà phê sữa đá',
+        price: 35000,
+        imageUrl: '/products/coffee-001.svg',
+        category: 'Cà phê truyền thống',
+        description: 'Mô tả cà phê ngon',
+        badge: 'Bán chạy',
+      };
+      const result = validateProduct(valid, 0);
+      expect(result).toEqual(valid);
+    });
+
+    it('should throw an error if item is not an object or is null', () => {
+      expect(() => validateProduct(null, 0)).toThrow(/không phải là đối tượng hợp lệ/);
+      expect(() => validateProduct('invalid-string', 1)).toThrow(/không phải là đối tượng hợp lệ/);
+    });
+
+    it('should throw an error if id is missing or whitespace', () => {
+      expect(() =>
+        validateProduct(
+          { name: 'Latte', price: 30000, imageUrl: '/img.svg' },
+          0,
+        ),
+      ).toThrow(/thiếu trường 'id'/);
+
+      expect(() =>
+        validateProduct(
+          { id: '   ', name: 'Latte', price: 30000, imageUrl: '/img.svg' },
+          0,
+        ),
+      ).toThrow(/thiếu trường 'id' hoặc 'id' rỗng/);
+    });
+
+    it('should throw an error if name is missing or whitespace', () => {
+      expect(() =>
+        validateProduct(
+          { id: 'c-1', name: '', price: 30000, imageUrl: '/img.svg' },
+          0,
+        ),
+      ).toThrow(/thiếu trường 'name' hoặc 'name' rỗng/);
+    });
+
+    it('should throw an error if price is negative, float, or not a number', () => {
+      expect(() =>
+        validateProduct(
+          { id: 'c-1', name: 'Latte', price: -100, imageUrl: '/img.svg' },
+          0,
+        ),
+      ).toThrow(/giá không hợp lệ/);
+
+      expect(() =>
+        validateProduct(
+          { id: 'c-1', name: 'Latte', price: 35.5, imageUrl: '/img.svg' },
+          0,
+        ),
+      ).toThrow(/giá không hợp lệ/);
+
+      expect(() =>
+        validateProduct(
+          { id: 'c-1', name: 'Latte', price: '30000', imageUrl: '/img.svg' },
+          0,
+        ),
+      ).toThrow(/giá không hợp lệ/);
+    });
+
+    it('should throw an error if imageUrl is missing or empty', () => {
+      expect(() =>
+        validateProduct(
+          { id: 'c-1', name: 'Latte', price: 30000, imageUrl: '' },
+          0,
+        ),
+      ).toThrow(/thiếu trường 'imageUrl'/);
+    });
+
+    it('should throw an error if optional fields have non-string types', () => {
+      expect(() =>
+        validateProduct(
+          {
+            id: 'c-1',
+            name: 'Latte',
+            price: 30000,
+            imageUrl: '/img.svg',
+            category: 1234,
+          },
+          0,
+        ),
+      ).toThrow(/trường 'category' không đúng kiểu chuỗi/);
+
+      expect(() =>
+        validateProduct(
+          {
+            id: 'c-1',
+            name: 'Latte',
+            price: 30000,
+            imageUrl: '/img.svg',
+            description: {},
+          },
+          0,
+        ),
+      ).toThrow(/trường 'description' không đúng kiểu chuỗi/);
+
+      expect(() =>
+        validateProduct(
+          {
+            id: 'c-1',
+            name: 'Latte',
+            price: 30000,
+            imageUrl: '/img.svg',
+            badge: ['badge'],
+          },
+          0,
+        ),
+      ).toThrow(/trường 'badge' không đúng kiểu chuỗi/);
+    });
+
+    it('should throw an error if validateProductList is given a non-array', () => {
+      expect(() => validateProductList(null)).toThrow(/không đúng định dạng danh sách/);
+      expect(() => validateProductList({ items: [] })).toThrow(/không đúng định dạng danh sách/);
     });
   });
 
@@ -105,7 +231,7 @@ describe('Frontend API & Utilities', () => {
   });
 
   describe('fetchProducts', () => {
-    it('should successfully fetch and return array of products', async () => {
+    it('should successfully fetch and return validated array of products', async () => {
       const fakeFetch = vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
@@ -135,16 +261,25 @@ describe('Frontend API & Utilities', () => {
       );
     });
 
-    it('should throw an error when API returns non-array payload', async () => {
+    it('should throw an error when API returns malformed payload missing required fields', async () => {
+      const malformedData = [
+        {
+          id: 'item-1',
+          name: 'Broken item',
+          price: 'invalid-string-price', // invalid!
+          imageUrl: '/img.svg',
+        },
+      ];
+
       const fakeFetch = vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
-        json: async () => ({ message: 'Not an array' }),
+        json: async () => malformedData,
       });
       global.fetch = fakeFetch as unknown as typeof fetch;
 
       await expect(fetchProducts('http://mock-api:3001')).rejects.toThrow(
-        /không đúng định dạng mảng/,
+        /có giá không hợp lệ/,
       );
     });
   });
