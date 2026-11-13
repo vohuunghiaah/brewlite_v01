@@ -56,7 +56,8 @@ brewlite_v01/
 │   │   ├── globals.css           # Cấu hình Tailwind CSS
 │   │   ├── layout.tsx            # Root layout HTML & metadata
 │   │   └── page.tsx              # Trang chủ hiển thị "Hello BrewLite"
-│   ├── public/                   # Tài nguyên tĩnh (ảnh, icons)
+│   ├── public/                   # Tài nguyên tĩnh
+│   │   └── products/             # Vector SVG icons cho danh mục sản phẩm đồ uống
 │   ├── .env.example              # Mẫu cấu hình môi trường Frontend
 │   ├── eslint.config.mjs         # Cấu hình ESLint 9
 │   ├── next.config.ts            # Cấu hình Next.js
@@ -64,20 +65,29 @@ brewlite_v01/
 │   └── tsconfig.json             # Cấu hình TypeScript Frontend
 ├── backend/                      # Phân hệ dịch vụ API NestJS
 │   ├── src/                      # Mã nguồn logic nghiệp vụ NestJS
+│   │   ├── products/             # Module quản lý danh mục sản phẩm (Task 2)
+│   │   │   ├── products.types.ts # Định nghĩa interface Product
+│   │   │   ├── products.data.ts  # Dữ liệu mẫu bất biến
+│   │   │   ├── products.service.ts
+│   │   │   ├── products.controller.ts
+│   │   │   ├── products.module.ts
+│   │   │   ├── products.service.spec.ts
+│   │   │   └── products.controller.spec.ts
 │   │   ├── app.controller.spec.ts# Unit test cho AppController
 │   │   ├── app.controller.ts     # Root HTTP Controller (GET /)
 │   │   ├── app.module.ts         # Module gốc ứng dụng
 │   │   ├── app.service.ts        # AppService cung cấp thông điệp Hello
 │   │   └── main.ts               # Điểm khởi chạy NestJS (cổng 3001)
 │   ├── test/                     # Kiểm thử tích hợp E2E
-│   │   └── app.e2e-spec.ts       # Test kiểm tra GET / trả về 200 OK
+│   │   └── app.e2e-spec.ts       # Test kiểm tra GET / và GET /products
 │   ├── .env.example              # Mẫu cấu hình môi trường Backend
 │   ├── nest-cli.json             # Cấu hình Nest CLI
 │   ├── package.json              # Khai báo dependencies & scripts Backend
 │   ├── tsconfig.json             # Cấu hình TypeScript Backend
 │   └── vitest.config.ts          # Cấu hình Vitest runner
 ├── docs/                         # Tài liệu nghiệm thu & quy trình Agile
-│   └── TASK-01.md                # Báo cáo nghiệm thu chi tiết Task 1
+│   ├── TASK-01.md                # Báo cáo nghiệm thu chi tiết Task 1
+│   └── TASK-02.md                # Báo cáo nghiệm thu chi tiết Task 2
 ├── .env.example                  # Mẫu biến môi trường chung tại thư mục gốc
 ├── .gitignore                    # Cấu hình loại trừ Git (node_modules, dist, .next)
 ├── package.json                  # Cấu hình monorepo & npm workspaces
@@ -172,20 +182,25 @@ npm run dev
 
 ---
 
-## 9. URL truy cập và kiểm tra Hello
+## 9. URL truy cập và kiểm tra API
 
 | Ứng dụng | Địa chỉ URL | Phương thức | Kết quả mong đợi |
 |---|---|---|---|
-| **Frontend** | `http://localhost:3000` | Browser GET | Giao diện Next.js hiển thị tiêu đề lớn **"Hello BrewLite"**, thông tin kiến trúc và trạng thái Task 1 |
-| **Backend API** | `http://localhost:3001/` | HTTP GET | Chuỗi ký tự plain text: `Hello BrewLite API` (Mã phản hồi HTTP: 200 OK) |
+| **Frontend** | `http://localhost:3000` | Browser GET | Giao diện Next.js hiển thị tiêu đề lớn **"Hello BrewLite"**, thông tin kiến trúc và trạng thái hệ thống |
+| **Backend API (Root)** | `http://localhost:3001/` | HTTP GET | Chuỗi ký tự plain text: `Hello BrewLite API` (HTTP 200 OK) |
+| **Backend API (Products)** | `http://localhost:3001/products` | HTTP GET | Danh sách JSON gồm 6 sản phẩm đồ uống (id, name, price, imageUrl) (HTTP 200 OK) |
 
 ### Lệnh kiểm tra nhanh API qua dòng lệnh:
 ```bash
-# Sử dụng curl (Windows PowerShell / Bash):
+# Kiểm tra Root API (Windows PowerShell / Bash):
 curl http://localhost:3001
+# Kết quả: Hello BrewLite API
 
-# Kết quả trả về:
-Hello BrewLite API
+# Kiểm tra Products API (Windows PowerShell):
+Invoke-RestMethod http://localhost:3001/products | ConvertTo-Json -Depth 3
+
+# Hoặc dùng curl:
+curl http://localhost:3001/products
 ```
 
 ---
@@ -206,10 +221,10 @@ npm run lint:backend
 
 ### B. Kiểm thử tự động (Unit Test & E2E Test)
 ```bash
-# Chạy unit test backend:
+# Chạy unit test backend (AppController, ProductsService, ProductsController):
 npm run test:backend
 
-# Chạy e2e test backend:
+# Chạy e2e test backend (GET / và GET /products):
 cd backend && npm run test:e2e
 ```
 
@@ -225,9 +240,9 @@ npm run build:backend
 
 ---
 
-## 11. Phạm vi chức năng của Task 1
+## 11. Tiến độ hoàn thành các Task
 
-Task 1 chỉ tập trung vào hạ tầng và khởi tạo nền tảng vững chắc:
+### Task 1 — Khởi tạo dự án và cấu trúc (Đã hoàn thành)
 - [x] Khởi tạo Monorepo cấu trúc rõ ràng (`frontend/`, `backend/`, `docs/`).
 - [x] Thiết lập Frontend Next.js 16 (App Router, Tailwind CSS, TypeScript).
 - [x] Hiển thị trang chủ với thông điệp "Hello BrewLite" responsive, hiện đại.
@@ -236,18 +251,23 @@ Task 1 chỉ tập trung vào hạ tầng và khởi tạo nền tảng vững c
 - [x] Viết Unit Test và E2E Test kiểm tra endpoint `GET /`.
 - [x] Cấu hình `.env.example` và `.gitignore` loại trừ triệt để tệp nhạy cảm và build artifact.
 - [x] Soạn thảo tài liệu `README.md` và `docs/TASK-01.md`.
-- [x] Đạt chuẩn Definition of Done (DoD).
 
-> **Giới hạn phạm vi:** Không cài đặt database phức tạp, không triển khai quản lý người dùng, giỏ hàng hay thanh toán trong Task 1.
+### Task 2 — API danh sách sản phẩm (Đã hoàn thành)
+- [x] Xây dựng Module NestJS chuẩn: `ProductsModule`, `ProductsController`, `ProductsService`.
+- [x] Endpoint `GET /products` trả về HTTP 200 OK và danh sách JSON menu.
+- [x] Mỗi sản phẩm có đầy đủ 4 trường bắt buộc: `id`, `name`, `price`, `imageUrl`.
+- [x] Các hình ảnh tham chiếu là vector SVG thật lưu tại `frontend/public/products/*.svg`.
+- [x] Dữ liệu mẫu khớp 100% với thiết kế Figma Make App (Cà phê sữa đá, Americano, Cappuccino nóng, Trà đào cam sả, Cold Brew Muối, Bánh sừng bò sô-cô-la) cùng các nhãn hiển thị (Bán chạy, Mới, Yêu thích, Hot Trend).
+- [x] 100% Unit test (9 tests) và E2E test (6 tests) vượt qua thành công.
+- [x] Soạn thảo tài liệu nghiệm thu chi tiết `docs/TASK-02.md`.
 
 ---
 
 ## 12. Kế hoạch các Task tiếp theo (Product Backlog)
 
 Các chức năng tiếp theo sẽ được hiện thực tuần tự theo quy trình Scrum:
-- **Task 2 (Sprint 1)**: `GET /products` — API danh sách sản phẩm mẫu (id, tên, giá, ảnh).
-- **Task 3 (Sprint 1)**: Trang Menu (Frontend) — Gọi API `/products`, hiển thị lưới sản phẩm với loading và empty state.
-- **Task 4 (Sprint 1)**: Chi tiết & tùy chọn sản phẩm — Chọn size (S/M/L), topping, tự động tính giá.
+- **Task 3 (Sprint 1)**: Trang Menu (Frontend) — Next.js gọi `/products`, render lưới sản phẩm, có loading/empty state.
+- **Task 4 (Sprint 1)**: Chi tiết & tùy chọn sản phẩm — Màn hình chi tiết: chọn size (S/M/L) và topping, tự động tính giá.
 - **Task 5 (Sprint 2)**: Giỏ hàng (Cart) — Thêm/sửa/xóa sản phẩm, lưu state bằng Zustand/Context, tính tổng tiền.
 - **Task 6 (Sprint 2)**: API tạo đơn hàng — `POST /orders`, xác thực dữ liệu qua class-validator, trạng thái PENDING.
 - **Task 7 (Sprint 2)**: Đăng ký / Đăng nhập — `POST /auth/register`, `POST /auth/login`, băm mật khẩu bcrypt, phát hành JWT.
