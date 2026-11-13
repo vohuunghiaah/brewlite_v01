@@ -261,12 +261,22 @@ npm run build:backend
 - [x] 100% Unit test (9 tests) và E2E test (6 tests) vượt qua thành công.
 - [x] Soạn thảo tài liệu nghiệm thu chi tiết `docs/TASK-02.md`.
 
+### Task 3 — Trang Menu Frontend (Đã hoàn thành)
+- [x] Thiết kế giao diện Next.js 16 tái hiện 100% nhận diện thương hiệu từ Figma Make App (Header, Hero Banner, Search Bar, Footer).
+- [x] Gọi API thật `GET /products` từ NestJS backend, không dùng mock data, không fallback ngầm.
+- [x] Render lưới sản phẩm (Product Grid) responsive: 1 cột (Mobile), 2 cột (Tablet), 3 cột (Desktop).
+- [x] Hiển thị đầy đủ thông tin: ảnh SVG cục bộ, tên món, giá VND (`35.000đ`), danh mục và badge nổi bật (*Bán chạy*, *Mới*, *Hot Trend*, *Yêu thích*).
+- [x] Bộ lọc danh mục (5 danh mục) và tìm kiếm hoạt động trực tiếp.
+- [x] Đầy đủ 4 trạng thái giao diện: Success, Loading Skeleton (`animate-pulse`), Empty State, Error State kèm nút Thử lại.
+- [x] Nút "Tùy chỉnh" và "+" có phản hồi Toast thông báo rõ ràng về phạm vi Task 4/5.
+- [x] Đạt 100% kiểm thử: 36/36 Unit & Component Tests pass, 6/6 E2E Tests pass, Lint 0 warnings/errors, Build thành công.
+- [x] Soạn thảo tài liệu nghiệm thu chi tiết `docs/TASK-03.md` kèm 4 ảnh chụp giao diện thực tế.
+
 ---
 
 ## 12. Kế hoạch các Task tiếp theo (Product Backlog)
 
 Các chức năng tiếp theo sẽ được hiện thực tuần tự theo quy trình Scrum:
-- **Task 3 (Sprint 1)**: Trang Menu (Frontend) — Next.js gọi `/products`, render lưới sản phẩm, có loading/empty state.
 - **Task 4 (Sprint 1)**: Chi tiết & tùy chọn sản phẩm — Màn hình chi tiết: chọn size (S/M/L) và topping, tự động tính giá.
 - **Task 5 (Sprint 2)**: Giỏ hàng (Cart) — Thêm/sửa/xóa sản phẩm, lưu state bằng Zustand/Context, tính tổng tiền.
 - **Task 6 (Sprint 2)**: API tạo đơn hàng — `POST /orders`, xác thực dữ liệu qua class-validator, trạng thái PENDING.
