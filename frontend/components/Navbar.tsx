@@ -1,10 +1,16 @@
 'use client';
 
-interface NavbarProps {
+export interface NavbarProps {
   onCartClick?: () => void;
+  onHistoryClick?: () => void;
+  onAccountClick?: () => void;
 }
 
-export default function Navbar({ onCartClick }: NavbarProps) {
+export default function Navbar({
+  onCartClick,
+  onHistoryClick,
+  onAccountClick,
+}: NavbarProps) {
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-stone-200">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
@@ -72,11 +78,13 @@ export default function Navbar({ onCartClick }: NavbarProps) {
             <span>Thực đơn</span>
           </a>
 
+          {/* Lịch sử button (Task 9) */}
           <button
             type="button"
-            onClick={onCartClick}
+            onClick={onHistoryClick}
             className="flex items-center gap-1.5 text-sm font-medium hover:text-[#382218] transition-colors cursor-pointer"
-            title="Lịch sử đơn hàng (Task 9)"
+            title="Lịch sử đơn hàng (Chức năng sẽ được triển khai ở Task 9)"
+            aria-label="Xem lịch sử đơn hàng - Sắp ra mắt ở Task 9"
           >
             <svg
               className="w-5 h-5"
@@ -95,11 +103,13 @@ export default function Navbar({ onCartClick }: NavbarProps) {
             <span>Lịch sử</span>
           </button>
 
+          {/* Tài khoản button (Task 7) */}
           <button
             type="button"
-            onClick={onCartClick}
+            onClick={onAccountClick}
             className="flex items-center gap-1.5 text-sm font-medium hover:text-[#382218] transition-colors cursor-pointer"
-            title="Tài khoản (Task 7)"
+            title="Tài khoản & Đăng nhập (Chức năng sẽ được triển khai ở Task 7)"
+            aria-label="Tài khoản và Đăng nhập - Sắp ra mắt ở Task 7"
           >
             <svg
               className="w-5 h-5"
@@ -119,13 +129,14 @@ export default function Navbar({ onCartClick }: NavbarProps) {
           </button>
         </nav>
 
-        {/* Right Action: Cart button */}
+        {/* Right Action: Cart button (Task 5) */}
         <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={onCartClick}
             className="relative w-10 h-10 rounded-full bg-[#382218] hover:bg-[#4a2e21] text-white flex items-center justify-center transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 cursor-pointer"
-            aria-label="Giỏ hàng (Sẽ ra mắt ở Task 5)"
+            title="Giỏ hàng (Chức năng sẽ được triển khai ở Task 5)"
+            aria-label="Giỏ hàng - Sắp ra mắt ở Task 5"
           >
             <svg
               className="w-5 h-5"
