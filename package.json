@@ -1,0 +1,24 @@
+{
+  "name": "brewlite_v01",
+  "version": "1.0.0",
+  "description": "BrewLite - Cashless Coffee Ordering System (Assignment 1)",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev:backend": "npm --prefix backend run start:dev",
+    "build:frontend": "npm --prefix frontend run build",
+    "build:backend": "npm --prefix backend run build",
+    "build": "npm run build:frontend && npm run build:backend",
+    "lint:frontend": "npm --prefix frontend run lint",
+    "lint:backend": "npm --prefix backend run lint",
+    "lint": "npm run lint:frontend && npm run lint:backend",
+    "test:backend": "npm --prefix backend run test",
+    "test": "npm run test:backend"
+  },
+  "author": "BrewLite Team",
+  "license": "UNLICENSED"
+}
