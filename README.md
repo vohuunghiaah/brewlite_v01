@@ -172,20 +172,52 @@ npm run dev
 
 ---
 
-## 9. URL truy cập và kiểm tra Hello
+## 9. URL truy cập và kiểm tra API
 
-| Ứng dụng | Địa chỉ URL | Phương thức | Kết quả mong đợi |
-|---|---|---|---|
-| **Frontend** | `http://localhost:3000` | Browser GET | Giao diện Next.js hiển thị tiêu đề lớn **"Hello BrewLite"**, thông tin kiến trúc và trạng thái Task 1 |
-| **Backend API** | `http://localhost:3001/` | HTTP GET | Chuỗi ký tự plain text: `Hello BrewLite API` (Mã phản hồi HTTP: 200 OK) |
+| Ứng dụng / Endpoint | Địa chỉ URL | Phương thức | Kiểu trả về | Kết quả mong đợi |
+|---|---|---|---|---|
+| **Frontend Web** | `http://localhost:3000` | Browser GET | HTML | Giao diện Next.js hiển thị tiêu đề lớn **"Hello BrewLite"**, thông tin kiến trúc và trạng thái hệ thống |
+| **Backend Health** | `http://localhost:3001/` | HTTP GET | Plain Text | `Hello BrewLite API` (HTTP 200 OK) |
+| **Backend Products** | `http://localhost:3001/products` | HTTP GET | JSON Array | Danh sách 4 sản phẩm đồ uống kèm `id`, `name`, `price`, `imageUrl` (HTTP 200 OK) |
 
-### Lệnh kiểm tra nhanh API qua dòng lệnh:
-```bash
-# Sử dụng curl (Windows PowerShell / Bash):
-curl http://localhost:3001
+### Lệnh kiểm tra nhanh API qua dòng lệnh (Windows PowerShell):
+```powershell
+# 1. Kiểm tra endpoint Health / Hello:
+Invoke-RestMethod http://localhost:3001/
+# Kết quả: Hello BrewLite API
 
-# Kết quả trả về:
-Hello BrewLite API
+# 2. Kiểm tra endpoint danh sách sản phẩm (Task 2):
+Invoke-RestMethod http://localhost:3001/products | ConvertTo-Json -Depth 5
+```
+
+### Ví dụ JSON phản hồi từ `GET /products`:
+```json
+[
+  {
+    "id": "coffee-milk",
+    "name": "Cà phê sữa",
+    "price": 35000,
+    "imageUrl": "/images/products/coffee-milk.svg"
+  },
+  {
+    "id": "americano",
+    "name": "Americano",
+    "price": 40000,
+    "imageUrl": "/images/products/americano.svg"
+  },
+  {
+    "id": "cappuccino",
+    "name": "Cappuccino",
+    "price": 45000,
+    "imageUrl": "/images/products/cappuccino.svg"
+  },
+  {
+    "id": "peach-tea",
+    "name": "Trà đào",
+    "price": 39000,
+    "imageUrl": "/images/products/peach-tea.svg"
+  }
+]
 ```
 
 ---
@@ -206,10 +238,10 @@ npm run lint:backend
 
 ### B. Kiểm thử tự động (Unit Test & E2E Test)
 ```bash
-# Chạy unit test backend:
+# Chạy toàn bộ unit test backend (AppController, ProductsService, ProductsController):
 npm run test:backend
 
-# Chạy e2e test backend:
+# Chạy toàn bộ e2e integration test backend (app.e2e-spec.ts, products.e2e-spec.ts):
 cd backend && npm run test:e2e
 ```
 
@@ -225,27 +257,31 @@ npm run build:backend
 
 ---
 
-## 11. Phạm vi chức năng của Task 1
+## 11. Trạng thái các Task trong Sprint 1
 
-Task 1 chỉ tập trung vào hạ tầng và khởi tạo nền tảng vững chắc:
+### A. Task 1 — Khởi tạo dự án và cấu trúc (Hoàn thành)
 - [x] Khởi tạo Monorepo cấu trúc rõ ràng (`frontend/`, `backend/`, `docs/`).
 - [x] Thiết lập Frontend Next.js 16 (App Router, Tailwind CSS, TypeScript).
-- [x] Hiển thị trang chủ với thông điệp "Hello BrewLite" responsive, hiện đại.
 - [x] Thiết lập Backend NestJS 12 (TypeScript, REST API).
-- [x] Endpoint `GET /` phản hồi thông báo `"Hello BrewLite API"` trên cổng 3001 (hỗ trợ cấu hình qua `PORT`).
-- [x] Viết Unit Test và E2E Test kiểm tra endpoint `GET /`.
-- [x] Cấu hình `.env.example` và `.gitignore` loại trừ triệt để tệp nhạy cảm và build artifact.
-- [x] Soạn thảo tài liệu `README.md` và `docs/TASK-01.md`.
-- [x] Đạt chuẩn Definition of Done (DoD).
+- [x] Endpoint `GET /` phản hồi thông báo `"Hello BrewLite API"` trên cổng 3001.
+- [x] Unit Test & E2E Test cho Task 1 (100% Pass).
+- [x] Báo cáo nghiệm thu chi tiết: xem [docs/TASK-01.md](docs/TASK-01.md).
 
-> **Giới hạn phạm vi:** Không cài đặt database phức tạp, không triển khai quản lý người dùng, giỏ hàng hay thanh toán trong Task 1.
+### B. Task 2 — API danh sách sản phẩm (Hoàn thành)
+- [x] Xây dựng module `ProductsModule`, `ProductsController`, `ProductsService`.
+- [x] Endpoint `GET /products` phản hồi HTTP 200 và mảng JSON các món đồ uống.
+- [x] Mỗi sản phẩm có đầy đủ 4 trường bắt buộc: `id`, `name`, `price` (số nguyên VND), `imageUrl`.
+- [x] Tích hợp bộ ảnh vector SVG thực tế tại `frontend/public/images/products/` sẵn sàng cho Task 3.
+- [x] Unit Test kiểm tra tính toàn vẹn dữ liệu, tính duy nhất của ID, bản sao phòng thủ và Controller delegation (100% Pass).
+- [x] HTTP E2E Test kiểm tra request thực tế qua Supertest không cần JWT (100% Pass).
+- [x] Không gây lỗi hồi quy cho `GET /` của Task 1.
+- [x] Báo cáo nghiệm thu chi tiết: xem [docs/TASK-02.md](docs/TASK-02.md).
 
 ---
 
 ## 12. Kế hoạch các Task tiếp theo (Product Backlog)
 
 Các chức năng tiếp theo sẽ được hiện thực tuần tự theo quy trình Scrum:
-- **Task 2 (Sprint 1)**: `GET /products` — API danh sách sản phẩm mẫu (id, tên, giá, ảnh).
 - **Task 3 (Sprint 1)**: Trang Menu (Frontend) — Gọi API `/products`, hiển thị lưới sản phẩm với loading và empty state.
 - **Task 4 (Sprint 1)**: Chi tiết & tùy chọn sản phẩm — Chọn size (S/M/L), topping, tự động tính giá.
 - **Task 5 (Sprint 2)**: Giỏ hàng (Cart) — Thêm/sửa/xóa sản phẩm, lưu state bằng Zustand/Context, tính tổng tiền.
