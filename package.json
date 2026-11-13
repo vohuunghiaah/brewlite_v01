@@ -17,7 +17,8 @@
     "lint:backend": "npm --prefix backend run lint",
     "lint": "npm run lint:frontend && npm run lint:backend",
     "test:backend": "npm --prefix backend run test",
-    "test": "npm run test:backend"
+    "test:frontend": "npm --prefix frontend run test",
+    "test": "npm run test:backend && npm run test:frontend"
   },
   "author": "BrewLite Team",
   "license": "UNLICENSED"
