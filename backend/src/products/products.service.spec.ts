@@ -50,5 +50,14 @@ describe('ProductsService', () => {
       expect(firstCall).not.toBe(secondCall);
       expect(firstCall).toEqual(secondCall);
     });
+
+    it('should correctly expose Figma badges for highlighted products', () => {
+      const products = service.findAll();
+      const productMap = new Map(products.map((p) => [p.id, p]));
+      expect(productMap.get('coffee-001')?.badge).toBe('Bán chạy');
+      expect(productMap.get('coffee-003')?.badge).toBe('Mới');
+      expect(productMap.get('tea-001')?.badge).toBe('Yêu thích');
+      expect(productMap.get('coffee-004')?.badge).toBe('Hot Trend');
+    });
   });
 });

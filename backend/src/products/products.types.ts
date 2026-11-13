@@ -5,4 +5,5 @@ export interface Product {
   imageUrl: string;
   category?: string;
   description?: string;
+  badge?: string;
 }

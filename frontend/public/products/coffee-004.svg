@@ -1,13 +1,28 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100%" height="100%">
-  <rect width="200" height="200" rx="24" fill="#FBF9F7"/>
-  <!-- Demitasse Cup Body -->
-  <path d="M65 85 L72 150 Q75 160 88 160 L112 160 Q125 160 128 150 L135 85 Z" fill="#ECEFF1" stroke="#90A4AE" stroke-width="4"/>
-  <!-- Demitasse Saucer -->
-  <ellipse cx="100" cy="165" rx="50" ry="8" fill="#CFD8DC" stroke="#90A4AE" stroke-width="2"/>
-  <!-- Espresso Liquid & Crema -->
-  <ellipse cx="100" cy="95" rx="28" ry="8" fill="#5D4037"/>
-  <ellipse cx="100" cy="94" rx="24" ry="6" fill="#8D6E63"/>
-  <ellipse cx="94" cy="93" rx="10" ry="3" fill="#D7CCC8" opacity="0.6"/>
-  <!-- Demitasse Small Handle -->
-  <path d="M132 100 C150 100 150 135 128 140" fill="none" stroke="#ECEFF1" stroke-width="8" stroke-linecap="round"/>
+  <rect width="200" height="200" rx="24" fill="#F8FAFC"/>
+  <!-- Glass Tumbler Outline -->
+  <path d="M60 45 L68 165 Q70 172 80 172 L120 172 Q130 172 132 165 L140 45 Z" fill="#E2E8F0" opacity="0.3" stroke="#94A3B8" stroke-width="3"/>
+  <!-- Dark Cold Brew Coffee Layer (Bottom & Middle) -->
+  <path d="M66 85 L68 165 Q70 172 80 172 L120 172 Q130 172 132 165 L134 85 Z" fill="#2E1B15"/>
+  <!-- Cold Brew Deep Amber Reflection -->
+  <path d="M72 100 L74 160 Q76 166 84 166 L116 166 Q124 166 126 160 L128 100 Z" fill="#42251D" opacity="0.7"/>
+  <!-- Ice Cubes inside Cold Brew -->
+  <rect x="76" y="110" width="22" height="22" rx="4" fill="#FFFFFF" opacity="0.35" transform="rotate(-6 87 121)"/>
+  <rect x="102" y="125" width="20" height="20" rx="4" fill="#FFFFFF" opacity="0.35" transform="rotate(8 112 135)"/>
+  <rect x="85" y="135" width="18" height="18" rx="3" fill="#FFFFFF" opacity="0.3"/>
+  <!-- Thick Salted Cream / Macchiato Foam Layer (Top) -->
+  <path d="M63 50 L66 88 Q100 95 134 88 L137 50 Z" fill="#FFFBF2"/>
+  <!-- Cream Drizzle Wave into Cold Brew -->
+  <path d="M66 85 Q75 102 82 88 Q92 108 100 87 Q112 104 122 88 Q128 98 134 86" fill="#FFFBF2"/>
+  <!-- Foam Top Rim -->
+  <ellipse cx="100" cy="50" rx="37" ry="9" fill="#FFFDF8" stroke="#F1EAD8" stroke-width="2"/>
+  <!-- Sea Salt Flakes & Caramel Dusting on Top -->
+  <circle cx="88" cy="48" r="1.5" fill="#C29D59"/>
+  <circle cx="96" cy="52" r="2" fill="#D4AF37"/>
+  <circle cx="108" cy="47" r="1.5" fill="#C29D59"/>
+  <circle cx="115" cy="51" r="1.2" fill="#E2C98A"/>
+  <circle cx="102" cy="46" r="1.8" fill="#FFFFFF"/>
+  <circle cx="92" cy="53" r="1.2" fill="#FFFFFF"/>
+  <!-- Straw -->
+  <line x1="126" y1="20" x2="108" y2="155" stroke="#CBD5E1" stroke-width="6" stroke-linecap="round"/>
 </svg>

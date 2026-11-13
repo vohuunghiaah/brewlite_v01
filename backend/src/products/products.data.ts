@@ -12,6 +12,7 @@ export const SAMPLE_PRODUCTS: readonly Product[] = Object.freeze([
     imageUrl: '/products/coffee-001.svg',
     category: 'Cà phê truyền thống',
     description: 'Cà phê phin truyền thống pha với sữa đặc, đậm đà hương vị Việt Nam.',
+    badge: 'Bán chạy',
   },
   {
     id: 'coffee-002',
@@ -28,6 +29,7 @@ export const SAMPLE_PRODUCTS: readonly Product[] = Object.freeze([
     imageUrl: '/products/coffee-003.svg',
     category: 'Cold Brew & Espresso',
     description: 'Espresso với lớp bọt sữa dày mịn, vị cân bằng hoàn hảo.',
+    badge: 'Mới',
   },
   {
     id: 'tea-001',
@@ -36,6 +38,7 @@ export const SAMPLE_PRODUCTS: readonly Product[] = Object.freeze([
     imageUrl: '/products/tea-001.svg',
     category: 'Trà trái cây',
     description: 'Trà xanh pha trái đào tươi, cam và sả, thơm mát sảng khoái.',
+    badge: 'Yêu thích',
   },
   {
     id: 'coffee-004',
@@ -44,6 +47,7 @@ export const SAMPLE_PRODUCTS: readonly Product[] = Object.freeze([
     imageUrl: '/products/coffee-004.svg',
     category: 'Cold Brew & Espresso',
     description: 'Cold brew ngâm 24 giờ với kem muối béo ngậy, phong cách Đài Loan.',
+    badge: 'Hot Trend',
   },
   {
     id: 'bakery-001',

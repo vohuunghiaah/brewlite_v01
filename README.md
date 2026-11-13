@@ -257,8 +257,8 @@ npm run build:backend
 - [x] Endpoint `GET /products` trả về HTTP 200 OK và danh sách JSON menu.
 - [x] Mỗi sản phẩm có đầy đủ 4 trường bắt buộc: `id`, `name`, `price`, `imageUrl`.
 - [x] Các hình ảnh tham chiếu là vector SVG thật lưu tại `frontend/public/products/*.svg`.
-- [x] Dữ liệu mẫu khớp với Wireframe tài liệu môn học (Cà phê sữa, Americano, Cappuccino, Trà đào).
-- [x] 100% Unit test (8 tests) và E2E test (5 tests) vượt qua thành công.
+- [x] Dữ liệu mẫu khớp 100% với thiết kế Figma Make App (Cà phê sữa đá, Americano, Cappuccino nóng, Trà đào cam sả, Cold Brew Muối, Bánh sừng bò sô-cô-la) cùng các nhãn hiển thị (Bán chạy, Mới, Yêu thích, Hot Trend).
+- [x] 100% Unit test (9 tests) và E2E test (6 tests) vượt qua thành công.
 - [x] Soạn thảo tài liệu nghiệm thu chi tiết `docs/TASK-02.md`.
 
 ---

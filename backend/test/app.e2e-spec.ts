@@ -84,6 +84,20 @@ describe('BrewLite API (e2e)', () => {
       const uniqueIds = new Set(ids);
       expect(uniqueIds.size).toBe(ids.length);
     });
+
+    it('/products (GET) should include verified Figma badges', async () => {
+      const response = await request(app.getHttpServer())
+        .get('/products')
+        .expect(200);
+
+      const productMap = new Map(
+        response.body.map((p: { id: string; badge?: string }) => [p.id, p]),
+      );
+      expect(productMap.get('coffee-001')?.badge).toBe('Bán chạy');
+      expect(productMap.get('coffee-003')?.badge).toBe('Mới');
+      expect(productMap.get('tea-001')?.badge).toBe('Yêu thích');
+      expect(productMap.get('coffee-004')?.badge).toBe('Hot Trend');
+    });
   });
 
   afterEach(async () => {
