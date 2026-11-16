@@ -86,8 +86,15 @@ brewlite_v01/
 │   ├── tsconfig.json             # Cấu hình TypeScript Backend
 │   └── vitest.config.ts          # Cấu hình Vitest runner
 ├── docs/                         # Tài liệu nghiệm thu & quy trình Agile
+│   ├── scrum/                    # Hồ sơ quản lý Agile Scrum (Product & Sprint Backlog)
+│   │   ├── product-backlog.md    # Product Backlog chi tiết 10 Tasks
+│   │   ├── sprint-01.md          # Kế hoạch & Backlog Sprint 1
+│   │   ├── definition-of-done.md # Tiêu chuẩn hoàn thành (DoD) chung
+│   │   ├── sprint-01-progress.md # Nhật ký tiến độ thực tế & xử lý sự cố Git
+│   │   └── github-project-tracking.md # Hướng dẫn thiết lập Milestones & Project Board
 │   ├── TASK-01.md                # Báo cáo nghiệm thu chi tiết Task 1
-│   └── TASK-02.md                # Báo cáo nghiệm thu chi tiết Task 2
+│   ├── TASK-02.md                # Báo cáo nghiệm thu chi tiết Task 2
+│   └── TASK-03.md                # Báo cáo nghiệm thu chi tiết Task 3
 ├── .env.example                  # Mẫu biến môi trường chung tại thư mục gốc
 ├── .gitignore                    # Cấu hình loại trừ Git (node_modules, dist, .next)
 ├── package.json                  # Cấu hình monorepo & npm workspaces
@@ -275,6 +282,8 @@ npm run build:backend
 ---
 
 ## 12. Kế hoạch các Task tiếp theo (Product Backlog)
+
+Chi tiết quản trị Agile Scrum được lưu trữ tại thư mục [docs/scrum/](docs/scrum/), bao gồm [Product Backlog](docs/scrum/product-backlog.md), [Kế hoạch Sprint 1](docs/scrum/sprint-01.md), [Definition of Done](docs/scrum/definition-of-done.md) và [Tiến độ thực tế](docs/scrum/sprint-01-progress.md).
 
 Các chức năng tiếp theo sẽ được hiện thực tuần tự theo quy trình Scrum:
 - **Task 4 (Sprint 1)**: Chi tiết & tùy chọn sản phẩm — Màn hình chi tiết: chọn size (S/M/L) và topping, tự động tính giá.
