@@ -1,3 +1,4 @@
+
 export enum OrderStatus {
   PENDING = 'PENDING',
   PAID = 'PAID',
@@ -22,8 +23,10 @@ export const SIZE_SURCHARGE: Readonly<Record<DrinkSize, number>> =
   });
 
 export const TOPPING_PRICES: Readonly<Record<string, number>> = Object.freeze({
-  'Trân châu trắng': 8000,
-  'Kem cheese macchiato': 10000,
+  'Trân châu trắng': 5000,
+  'Thạch cà phê': 5000,
+  'Shot espresso': 10000,
+  'Kem cheese': 10000,
 });
 
 export interface OrderItem {
