@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
 import { App } from 'supertest/types.js';
 import { AppModule } from './../src/app.module.js';
@@ -13,6 +13,13 @@ describe('BrewLite API (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
+    app.useGlobalPipes(
+      new ValidationPipe({
+        whitelist: true,
+        forbidNonWhitelisted: true,
+        transform: true,
+      }),
+    );
     await app.init();
   });
 
@@ -97,6 +104,68 @@ describe('BrewLite API (e2e)', () => {
       expect(productMap.get('coffee-003')?.badge).toBe('Mới');
       expect(productMap.get('tea-001')?.badge).toBe('Yêu thích');
       expect(productMap.get('coffee-004')?.badge).toBe('Hot Trend');
+    });
+  });
+
+  describe('Task 6: POST /orders', () => {
+    it('POST /orders -> 201 Created, trả về mã đơn và trạng thái PENDING', async () => {
+      const response = await request(app.getHttpServer())
+        .post('/orders')
+        .send({
+          items: [
+            {
+              productId: 'coffee-004',
+              size: 'L',
+              toppings: ['Kem cheese macchiato'],
+              qty: 1,
+            },
+          ],
+        })
+        .expect(201);
+
+      expect(response.body.id).toMatch(/^ORD-\d{8}-[0-9A-F]{4}$/);
+      expect(response.body.status).toBe('PENDING');
+      // Cold Brew Muối (42.000) + Size L (12.000) + Kem cheese (10.000) = 64.000
+      expect(response.body.total).toBe(64000);
+      expect(response.body.items).toHaveLength(1);
+      expect(response.body.items[0].productName).toBe('Cold Brew Muối');
+      expect(response.body.items[0].unitPrice).toBe(64000);
+      expect(response.body.items[0].lineTotal).toBe(64000);
+    });
+
+    it('POST /orders -> 400 Bad Request khi giỏ hàng rỗng hoặc sai dữ liệu', async () => {
+      await request(app.getHttpServer())
+        .post('/orders')
+        .send({ items: [] })
+        .expect(400);
+
+      await request(app.getHttpServer())
+        .post('/orders')
+        .send({
+          items: [{ productId: 'coffee-001', size: 'XL', qty: 0 }],
+        })
+        .expect(400);
+
+      await request(app.getHttpServer())
+        .post('/orders')
+        .send({
+          items: [
+            {
+              productId: 'coffee-001',
+              size: 'M',
+              toppings: ['Topping lạ'],
+              qty: 1,
+            },
+          ],
+        })
+        .expect(400);
+
+      await request(app.getHttpServer())
+        .post('/orders')
+        .send({
+          items: [{ productId: 'non-existing-product', size: 'M', qty: 1 }],
+        })
+        .expect(400);
     });
   });
 
