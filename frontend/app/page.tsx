@@ -29,12 +29,6 @@ function HomeContent() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
-  const handleHistoryClick = () => {
-    setNotice(
-      'Chức năng Lịch sử đơn hàng (GET /orders/me) sẽ được triển khai ở Task 9.',
-    );
-  };
-
   const handleAccountClick = () => {
     setIsAuthModalOpen(true);
   };
@@ -61,7 +55,6 @@ function HomeContent() {
         onLogout={logout}
         cartItemCount={itemCount}
         onCartClick={() => setIsCartOpen(true)}
-        onHistoryClick={handleHistoryClick}
         onAccountClick={handleAccountClick}
       />
       <MenuPage

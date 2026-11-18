@@ -2,6 +2,7 @@ import { ConflictException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { AuthService } from './auth.service.js';
+import { PrismaService } from '../prisma/prisma.service.js';
 
 describe('AuthService', () => {
   let authService: AuthService;
@@ -12,7 +13,32 @@ describe('AuthService', () => {
       secret: 'test-secret-key',
       signOptions: { expiresIn: '1h' },
     });
-    authService = new AuthService(jwtService);
+    type TestUser = {
+      id: string;
+      email: string;
+      passwordHash: string;
+      loyaltyPoints: number;
+      createdAt: Date;
+    };
+    const users = new Map<string, TestUser>();
+    const prisma = {
+      user: {
+        findUnique: async ({ where }: { where: { id?: string; email?: string } }) =>
+          [...users.values()].find((user) =>
+            where.id ? user.id === where.id : user.email === where.email,
+          ) ?? null,
+        create: async ({ data }: { data: TestUser }) => {
+          if ([...users.values()].some((user) => user.email === data.email)) {
+            const error = new Error('Unique constraint') as Error & { code: string };
+            error.code = 'P2002';
+            throw error;
+          }
+          users.set(data.id, data);
+          return data;
+        },
+      },
+    } as unknown as PrismaService;
+    authService = new AuthService(jwtService, prisma);
   });
 
   describe('register', () => {
@@ -103,7 +129,7 @@ describe('AuthService', () => {
         password: 'password123',
       });
 
-      const profile = authService.getProfile(reg.user.id);
+      const profile = await authService.getProfile(reg.user.id);
       expect(profile.id).toBe(reg.user.id);
       expect(profile.email).toBe('profile@brewlite.vn');
       expect((profile as Record<string, unknown>).passwordHash).toBeUndefined();

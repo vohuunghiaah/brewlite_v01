@@ -7,19 +7,22 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import bcrypt from 'bcryptjs';
 import { randomBytes } from 'node:crypto';
+import { Prisma } from '@prisma/client';
+import { PrismaService } from '../prisma/prisma.service.js';
 import type { LoginDto } from './dto/login.dto.js';
 import type { RegisterDto } from './dto/register.dto.js';
 import type { AuthResponse, SafeUser, User } from './auth.types.js';
 
 @Injectable()
 export class AuthService {
-  private readonly users: User[] = [];
-
-  constructor(private readonly jwtService: JwtService) {}
+  constructor(
+    private readonly jwtService: JwtService,
+    private readonly prisma: PrismaService,
+  ) {}
 
   async register(dto: RegisterDto): Promise<AuthResponse> {
     const normalizedEmail = dto.email.trim().toLowerCase();
-    const existingUser = this.findUserByEmail(normalizedEmail);
+    const existingUser = await this.findUserByEmail(normalizedEmail);
 
     if (existingUser) {
       throw new ConflictException(
@@ -38,7 +41,27 @@ export class AuthService {
       createdAt: new Date().toISOString(),
     });
 
-    this.users.push(newUser);
+    try {
+      await this.prisma.user.create({
+        data: {
+          id: newUser.id,
+          email: newUser.email,
+          passwordHash: newUser.passwordHash,
+          loyaltyPoints: newUser.loyaltyPoints,
+          createdAt: new Date(newUser.createdAt),
+        },
+      });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
+        throw new ConflictException(
+          `Email '${normalizedEmail}' đã được sử dụng. Vui lòng chọn email khác.`,
+        );
+      }
+      throw error;
+    }
 
     const accessToken = await this.generateToken(newUser);
     return {
@@ -49,7 +72,7 @@ export class AuthService {
 
   async login(dto: LoginDto): Promise<AuthResponse> {
     const normalizedEmail = dto.email.trim().toLowerCase();
-    const user = this.findUserByEmail(normalizedEmail);
+    const user = await this.findUserByEmail(normalizedEmail);
 
     if (!user) {
       throw new UnauthorizedException('Email hoặc mật khẩu không chính xác.');
@@ -67,18 +90,20 @@ export class AuthService {
     };
   }
 
-  findUserById(id: string): User | undefined {
-    return this.users.find((u) => u.id === id);
+  async findUserById(id: string): Promise<User | undefined> {
+    const user = await this.prisma.user.findUnique({ where: { id } });
+    return user ? this.toUser(user) : undefined;
   }
 
-  findUserByEmail(email: string): User | undefined {
-    return this.users.find(
-      (u) => u.email.toLowerCase() === email.toLowerCase(),
-    );
+  async findUserByEmail(email: string): Promise<User | undefined> {
+    const user = await this.prisma.user.findUnique({
+      where: { email: email.toLowerCase() },
+    });
+    return user ? this.toUser(user) : undefined;
   }
 
-  getProfile(userId: string): SafeUser {
-    const user = this.findUserById(userId);
+  async getProfile(userId: string): Promise<SafeUser> {
+    const user = await this.findUserById(userId);
     if (!user) {
       throw new NotFoundException('Không tìm thấy thông tin người dùng.');
     }
@@ -92,6 +117,22 @@ export class AuthService {
       loyaltyPoints: user.loyaltyPoints,
       createdAt: user.createdAt,
     });
+  }
+
+  private toUser(user: {
+    id: string;
+    email: string;
+    passwordHash: string;
+    loyaltyPoints: number;
+    createdAt: Date;
+  }): User {
+    return {
+      id: user.id,
+      email: user.email,
+      passwordHash: user.passwordHash,
+      loyaltyPoints: user.loyaltyPoints,
+      createdAt: user.createdAt.toISOString(),
+    };
   }
 
   private async generateToken(user: User): Promise<string> {

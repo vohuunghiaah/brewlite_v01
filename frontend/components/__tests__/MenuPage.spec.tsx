@@ -260,8 +260,8 @@ describe('MenuPage & Component UI Testing', () => {
     });
   });
 
-  describe('6. Navbar Placeholder Interactions', () => {
-    it('should call distinct callbacks for Cart, History, and Account buttons', () => {
+  describe('6. Navbar Interactions', () => {
+    it('should call distinct callbacks for Cart, History, and Account actions', () => {
       const onCartClick = vi.fn();
       const onHistoryClick = vi.fn();
       const onAccountClick = vi.fn();
@@ -282,7 +282,7 @@ describe('MenuPage & Component UI Testing', () => {
       expect(onCartClick).toHaveBeenCalledTimes(1);
 
       // History
-      const historyButton = screen.getByRole('button', {
+      const historyButton = screen.getByRole('link', {
         name: /Xem lịch sử đơn hàng/i,
       });
       fireEvent.click(historyButton);

@@ -1,0 +1,61 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  PAYMENT_FAILED
+  PREPARING
+  READY
+  COMPLETED
+  CANCELLED
+}
+
+enum DrinkSize {
+  S
+  M
+  L
+}
+
+model User {
+  id            String   @id
+  email         String   @unique
+  passwordHash  String
+  loyaltyPoints Int      @default(0)
+  createdAt     DateTime @default(now())
+  orders        Order[]
+}
+
+model Order {
+  id        String      @id
+  userId    String?
+  status    OrderStatus @default(PENDING)
+  total     Int
+  note      String?
+  createdAt DateTime    @default(now())
+  user      User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  items     OrderItem[]
+
+  @@index([userId, createdAt])
+}
+
+model OrderItem {
+  id          Int       @id @default(autoincrement())
+  orderId     String
+  productId   String
+  productName String
+  size        DrinkSize
+  toppings    String[]
+  qty         Int
+  unitPrice   Int
+  lineTotal   Int
+  order       Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+}

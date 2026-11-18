@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
   Post,
@@ -17,12 +18,18 @@ export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
   @UseGuards(JwtAuthGuard)
+  @Get('me')
+  findMine(@CurrentUser('id') userId: string): Promise<readonly Order[]> {
+    return this.ordersService.findByUserId(userId);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Post()
   @HttpCode(HttpStatus.CREATED)
   create(
     @Body() createOrderDto: CreateOrderDto,
     @CurrentUser('id') userId?: string,
-  ): Order {
+  ): Promise<Order> {
     return this.ordersService.create(createOrderDto, userId);
   }
 }

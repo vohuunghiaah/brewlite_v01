@@ -17,9 +17,9 @@ export class PaymentsService {
 
   constructor(private readonly ordersService: OrdersService) {}
 
-  processPayment(dto: CreatePaymentDto): Payment {
+  async processPayment(dto: CreatePaymentDto): Promise<Payment> {
     // 1. Tìm đơn hàng cần thanh toán
-    const order = this.ordersService.findById(dto.orderId);
+    const order = await this.ordersService.findById(dto.orderId);
 
     if (!order) {
       throw new NotFoundException(
@@ -53,7 +53,7 @@ export class PaymentsService {
     });
 
     // 5. Cập nhật trạng thái đơn hàng
-    this.ordersService.updatePaymentStatus(
+    await this.ordersService.updatePaymentStatus(
       order.id,
       isSuccessful
         ? OrderStatus.PAID

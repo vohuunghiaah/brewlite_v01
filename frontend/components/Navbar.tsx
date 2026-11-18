@@ -87,12 +87,12 @@ export default function Navbar({
           </a>
 
           {/* Lịch sử button (Task 9) */}
-          <button
-            type="button"
+          <a
+            href="/orders"
             onClick={onHistoryClick}
             className="flex items-center gap-1.5 text-sm font-medium hover:text-[#382218] transition-colors cursor-pointer"
-            title="Lịch sử đơn hàng (Chức năng sẽ được triển khai ở Task 9)"
-            aria-label="Xem lịch sử đơn hàng - Sắp ra mắt ở Task 9"
+            title="Lịch sử đơn hàng"
+            aria-label="Xem lịch sử đơn hàng"
           >
             <svg
               className="w-5 h-5"
@@ -109,7 +109,7 @@ export default function Navbar({
               />
             </svg>
             <span>Lịch sử</span>
-          </button>
+          </a>
 
           {/* Tài khoản button (Task 7) */}
           {user ? (

@@ -37,6 +37,7 @@ Mục đích của Assignment 1:
 | | Tailwind CSS | 4.x | Thiết kế giao diện utility-first, responsive đa thiết bị |
 | | ESLint | 9.x | Đảm bảo chuẩn cú pháp và quy tắc mã nguồn frontend |
 | **Backend** | NestJS | 12.x | Khung phát triển REST API hướng module chuẩn doanh nghiệp |
+| | Prisma | 6.x | ORM lưu tài khoản và đơn hàng trong PostgreSQL |
 | | Express Platform | 5.x | HTTP Server engine nền tảng cho NestJS |
 | | TypeScript | 5.x / 6.x | Kiểm soát kiểu tĩnh cho backend controller/service |
 | | Vitest | 4.x | Thực thi Unit Test và E2E Test tốc độ cao |
@@ -52,6 +53,7 @@ Dự án được tổ chức theo mô hình monorepo tinh gọn:
 ```text
 brewlite_v01/
 ├── frontend/                     # Phân hệ giao diện Next.js
+│   ├── Dockerfile                # Image frontend standalone multi-stage
 │   ├── app/                      # Next.js App Router (pages, layouts)
 │   │   ├── globals.css           # Cấu hình Tailwind CSS
 │   │   ├── layout.tsx            # Root layout HTML & metadata
@@ -64,6 +66,8 @@ brewlite_v01/
 │   ├── package.json              # Khai báo dependencies & scripts Frontend
 │   └── tsconfig.json             # Cấu hình TypeScript Frontend
 ├── backend/                      # Phân hệ dịch vụ API NestJS
+│   ├── prisma/                   # Prisma schema PostgreSQL
+│   ├── Dockerfile                # Image backend multi-stage
 │   ├── src/                      # Mã nguồn logic nghiệp vụ NestJS
 │   │   ├── products/             # Module quản lý danh mục sản phẩm (Task 2)
 │   │   │   ├── products.types.ts # Định nghĩa interface Product
@@ -91,6 +95,7 @@ brewlite_v01/
 ├── .env.example                  # Mẫu biến môi trường chung tại thư mục gốc
 ├── .gitignore                    # Cấu hình loại trừ Git (node_modules, dist, .next)
 ├── package.json                  # Cấu hình monorepo & npm workspaces
+├── docker-compose.yml            # Frontend, Backend và PostgreSQL
 └── README.md                     # Tài liệu hướng dẫn sử dụng dự án
 ```
 
@@ -130,7 +135,13 @@ Nội dung `.env` mẫu:
 ```env
 PORT=3001
 NEXT_PUBLIC_API_URL=http://localhost:3001
+JWT_SECRET=replace-this-with-a-long-random-secret
+POSTGRES_PASSWORD=brewlite_dev_password
+BACKEND_PORT=3001
+FRONTEND_PORT=3000
 ```
+
+---
 
 ### Bước 3: Cài đặt dependencies
 Cài đặt toàn bộ thư viện cho cả hai phân hệ:
@@ -142,6 +153,39 @@ npm install
 cd backend && npm install
 cd ../frontend && npm install
 cd ..
+```
+
+---
+
+## Chạy toàn hệ thống bằng Docker Compose
+
+Cài đặt Docker Desktop (có Docker Compose), mở terminal tại thư mục `brewlite_v01`, rồi chạy:
+
+```bash
+docker compose up --build
+```
+
+Compose sẽ build Frontend Next.js và Backend NestJS, chờ PostgreSQL sẵn sàng, đồng bộ schema Prisma rồi khởi chạy ứng dụng. Truy cập:
+
+- Frontend: `http://localhost:3000`
+- Backend API: `http://localhost:3001`
+- Lịch sử đơn hàng sau khi đăng nhập: `http://localhost:3000/orders`
+
+Có thể tùy chỉnh cổng và thông tin xác thực trong `.env` ở thư mục gốc (tạo từ `.env.example`). Compose tự tạo `DATABASE_URL` cho PostgreSQL trong network nội bộ. Giá trị mặc định chỉ dành cho phát triển cục bộ; hãy đổi `POSTGRES_PASSWORD` và `JWT_SECRET` trước khi triển khai ra môi trường khác. Dữ liệu PostgreSQL được lưu trong volume `postgres-data`, nên vẫn còn sau khi dừng container bằng `docker compose down`. Lệnh `docker compose down -v` sẽ xóa volume và toàn bộ dữ liệu.
+
+Để chạy backend trực tiếp ngoài Docker, cần có PostgreSQL đang chạy và cấu hình môi trường riêng:
+
+```bash
+# Tại thư mục gốc (PowerShell):
+Copy-Item backend\.env.example backend\.env
+
+# Hoặc trên Linux/macOS:
+cp backend/.env.example backend/.env
+
+cd backend
+npm install
+npm run db:deploy
+npm run start:dev
 ```
 
 ---
@@ -271,6 +315,16 @@ npm run build:backend
 - [x] Nút "Tùy chỉnh" và "+" có phản hồi Toast thông báo rõ ràng về phạm vi Task 4/5.
 - [x] Đạt 100% kiểm thử: 36/36 Unit & Component Tests pass, 6/6 E2E Tests pass, Lint 0 warnings/errors, Build thành công.
 - [x] Soạn thảo tài liệu nghiệm thu chi tiết `docs/TASK-03.md` kèm 4 ảnh chụp giao diện thực tế.
+
+### Task 9 — Xác nhận đơn & Docker hóa (Triển khai hoàn tất)
+- [x] Endpoint bảo vệ `GET /orders/me` theo tài khoản JWT.
+- [x] Trang lịch sử hiển thị chi tiết món, trạng thái và tổng tiền.
+- [x] Prisma/PostgreSQL lưu tài khoản và đơn hàng bền vững.
+- [x] Dockerfile multi-stage cho Next.js và NestJS.
+- [x] Docker Compose chạy PostgreSQL, Backend và Frontend.
+- [x] README có hướng dẫn chạy Docker.
+- [x] Frontend, backend, lint và build kiểm thử thành công.
+- [ ] Tạo commit Git và PR được nhóm review.
 
 ---
 
