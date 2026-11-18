@@ -1,27 +1,33 @@
 'use client';
 
 import { useState } from 'react';
+import AuthModal from '../components/AuthModal';
 import CartPanel from '../components/CartPanel';
 import Footer from '../components/Footer';
 import MenuPage from '../components/MenuPage';
 import Navbar from '../components/Navbar';
 import ToastNotice from '../components/ToastNotice';
+import { AuthProvider, useAuth } from '../context/AuthContext';
 import { CartProvider, useCart } from '../context/CartContext';
 import type { CartItemSelection } from '../types/cart';
 import type { Product } from '../types/product';
 
 export default function Home() {
   return (
-    <CartProvider>
-      <HomeContent />
-    </CartProvider>
+    <AuthProvider>
+      <CartProvider>
+        <HomeContent />
+      </CartProvider>
+    </AuthProvider>
   );
 }
 
 function HomeContent() {
   const { addItem, itemCount } = useCart();
+  const { user, logout } = useAuth();
   const [notice, setNotice] = useState<string | null>(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   const handleHistoryClick = () => {
     setNotice(
@@ -30,9 +36,7 @@ function HomeContent() {
   };
 
   const handleAccountClick = () => {
-    setNotice(
-      'Chức năng Tài khoản & Đăng nhập (POST /auth/login) sẽ được triển khai ở Task 7.',
-    );
+    setIsAuthModalOpen(true);
   };
 
   const handleNotice = (msg: string) => {
@@ -53,6 +57,8 @@ function HomeContent() {
   return (
     <div className="min-h-screen flex flex-col bg-[#FDFBF7] text-stone-900 font-sans antialiased">
       <Navbar
+        user={user}
+        onLogout={logout}
         cartItemCount={itemCount}
         onCartClick={() => setIsCartOpen(true)}
         onHistoryClick={handleHistoryClick}
@@ -65,6 +71,15 @@ function HomeContent() {
       />
       <Footer />
       {isCartOpen && <CartPanel onClose={() => setIsCartOpen(false)} />}
+      {isAuthModalOpen && (
+        <AuthModal
+          isOpen={isAuthModalOpen}
+          onClose={() => setIsAuthModalOpen(false)}
+          onSuccess={() => {
+            setNotice('Đăng nhập thành công!');
+          }}
+        />
+      )}
       <ToastNotice message={notice} onClose={() => setNotice(null)} />
     </div>
   );

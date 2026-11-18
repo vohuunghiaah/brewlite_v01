@@ -1,9 +1,13 @@
 'use client';
 
+import type { AuthUser } from '../lib/api';
+
 export interface NavbarProps {
   onCartClick?: () => void;
   onHistoryClick?: () => void;
   onAccountClick?: () => void;
+  onLogout?: () => void;
+  user?: AuthUser | null;
   cartItemCount?: number;
 }
 
@@ -11,6 +15,8 @@ export default function Navbar({
   onCartClick,
   onHistoryClick,
   onAccountClick,
+  onLogout,
+  user,
   cartItemCount = 0,
 }: NavbarProps) {
   return (
@@ -106,29 +112,45 @@ export default function Navbar({
           </button>
 
           {/* Tài khoản button (Task 7) */}
-          <button
-            type="button"
-            onClick={onAccountClick}
-            className="flex items-center gap-1.5 text-sm font-medium hover:text-[#382218] transition-colors cursor-pointer"
-            title="Tài khoản & Đăng nhập (Chức năng sẽ được triển khai ở Task 7)"
-            aria-label="Tài khoản và Đăng nhập - Sắp ra mắt ở Task 7"
-          >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
+          {user ? (
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold px-2.5 py-1 bg-amber-50 text-amber-800 border border-amber-200 rounded-full">
+                {user.email.split('@')[0]}
+              </span>
+              <button
+                type="button"
+                onClick={onLogout}
+                className="text-xs text-stone-500 hover:text-red-600 transition-colors"
+                title="Đăng xuất"
+              >
+                Đăng xuất
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={onAccountClick}
+              className="flex items-center gap-1.5 text-sm font-medium hover:text-[#382218] transition-colors cursor-pointer"
+              title="Đăng nhập hoặc đăng ký"
+              aria-label="Tài khoản và Đăng nhập"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-              />
-            </svg>
-            <span>Tài khoản</span>
-          </button>
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                />
+              </svg>
+              <span>Đăng nhập</span>
+            </button>
+          )}
         </nav>
 
         {/* Right Action: Cart button (Task 5) */}

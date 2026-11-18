@@ -51,7 +51,7 @@ describe('OrdersController', () => {
   });
 
   describe('create', () => {
-    it('should call ordersService.create and return the created order', () => {
+    it('should call ordersService.create with dto and userId and return the created order', () => {
       const dto: CreateOrderDto = {
         items: [
           {
@@ -64,8 +64,8 @@ describe('OrdersController', () => {
         note: 'Ít đường',
       };
 
-      const result = controller.create(dto);
-      expect(createMock).toHaveBeenCalledWith(dto);
+      const result = controller.create(dto, 'USR-001');
+      expect(createMock).toHaveBeenCalledWith(dto, 'USR-001');
       expect(result).toEqual(mockOrder);
       expect(result.status).toBe(OrderStatus.PENDING);
     });
