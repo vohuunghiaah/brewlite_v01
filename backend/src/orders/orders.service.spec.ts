@@ -10,9 +10,9 @@ describe('OrdersService', () => {
   it('tạo đơn hàng trạng thái PENDING và tính tổng tiền chính xác kèm size & topping', () => {
     const service = createService();
 
-    // Cà phê sữa đá (35.000) + Size M (+6.000) + Trân châu trắng (+8.000) = 49.000 * 2 = 98.000
+    // Cà phê sữa đá (35.000) + Size M (+6.000) + Trân châu trắng (+5.000) = 46.000 * 2 = 92.000
     // Trà đào cam sả (39.000) + Size S (+0) = 39.000 * 1 = 39.000
-    // Tổng = 137.000
+    // Tổng = 131.000
     const order = service.create({
       items: [
         {
@@ -33,9 +33,9 @@ describe('OrdersService', () => {
     expect(order.id).toMatch(/^ORD-\d{8}-[0-9A-F]{4}$/);
     expect(order.status).toBe(OrderStatus.PENDING);
     expect(order.items).toHaveLength(2);
-    expect(order.items[0].unitPrice).toBe(49000);
-    expect(order.items[0].lineTotal).toBe(98000);
-    expect(order.total).toBe(137000);
+    expect(order.items[0].unitPrice).toBe(46000);
+    expect(order.items[0].lineTotal).toBe(92000);
+    expect(order.total).toBe(131000);
     expect(order.note).toBe('Ít đá giúp mình');
     expect(service.findAll()).toHaveLength(1);
   });

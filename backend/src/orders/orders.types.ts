@@ -27,6 +27,7 @@ export const TOPPING_PRICES: Readonly<Record<string, number>> = Object.freeze({
   'Thạch cà phê': 5000,
   'Shot espresso': 10000,
   'Kem cheese': 10000,
+  'Kem cheese macchiato': 10000,
 });
 
 export interface OrderItem {

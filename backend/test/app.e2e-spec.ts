@@ -116,7 +116,7 @@ describe('BrewLite API (e2e)', () => {
             {
               productId: 'coffee-004',
               size: 'L',
-              toppings: ['Kem cheese macchiato'],
+              toppings: ['Kem cheese'],
               qty: 1,
             },
           ],
