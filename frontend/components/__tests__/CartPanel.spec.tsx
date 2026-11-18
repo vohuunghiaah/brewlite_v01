@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import CartPanel from '../CartPanel';
 import Navbar from '../Navbar';
 import { CartProvider, useCart } from '../../context/CartContext';
+import { AuthProvider } from '../../context/AuthContext';
 import type { Product } from '../../types/product';
 
 const PRODUCT: Product = {
@@ -40,9 +41,11 @@ describe('CartPanel', () => {
 
   it('updates the badge and total, then removes an item from the cart', () => {
     render(
-      <CartProvider>
-        <CartHarness />
-      </CartProvider>,
+      <AuthProvider>
+        <CartProvider>
+          <CartHarness />
+        </CartProvider>
+      </AuthProvider>,
     );
 
     fireEvent.click(screen.getByRole('button', { name: 'Add coffee' }));

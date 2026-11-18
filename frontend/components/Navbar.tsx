@@ -1,5 +1,7 @@
 'use client';
 
+import { useAuth } from '../context/AuthContext';
+
 export interface NavbarProps {
   onCartClick?: () => void;
   onHistoryClick?: () => void;
@@ -13,6 +15,7 @@ export default function Navbar({
   onAccountClick,
   cartItemCount = 0,
 }: NavbarProps) {
+  const { user, logout, loading } = useAuth();
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-stone-200">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
@@ -105,30 +108,46 @@ export default function Navbar({
             <span>Lịch sử</span>
           </button>
 
-          {/* Tài khoản button (Task 7) */}
-          <button
-            type="button"
-            onClick={onAccountClick}
-            className="flex items-center gap-1.5 text-sm font-medium hover:text-[#382218] transition-colors cursor-pointer"
-            title="Tài khoản & Đăng nhập (Chức năng sẽ được triển khai ở Task 7)"
-            aria-label="Tài khoản và Đăng nhập - Sắp ra mắt ở Task 7"
-          >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-              />
-            </svg>
-            <span>Tài khoản</span>
-          </button>
+          {/* Authentication - Task 7 */}
+          {!loading && (
+            user ? (
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-[#382218] hidden lg:inline">
+                  {user.email}
+                </span>
+                <button
+                  type="button"
+                  onClick={logout}
+                  className="text-sm font-semibold text-red-600 hover:text-red-800"
+                >
+                  Đăng xuất
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={onAccountClick}
+                className="flex items-center gap-1.5 text-sm font-medium hover:text-[#382218] transition-colors cursor-pointer"
+                aria-label="Đăng nhập hoặc đăng ký"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                  />
+                </svg>
+                <span>Đăng nhập</span>
+              </button>
+            )
+          )}
         </nav>
 
         {/* Right Action: Cart button (Task 5) */}

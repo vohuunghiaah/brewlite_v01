@@ -3,6 +3,8 @@ import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { App } from 'supertest/types.js';
 import { AppModule } from './../src/app.module.js';
+import { JwtService } from '@nestjs/jwt';
+import { randomUUID } from 'node:crypto';
 
 describe('BrewLite API (e2e)', () => {
   let app: INestApplication<App>;
@@ -86,19 +88,122 @@ describe('BrewLite API (e2e)', () => {
     });
 
     it('/products (GET) should include verified Figma badges', async () => {
-      const response = await request(app.getHttpServer())
-        .get('/products')
-        .expect(200);
+  const response = await request(app.getHttpServer())
+    .get('/products')
+    .expect(200);
 
-      const productMap = new Map(
-        response.body.map((p: { id: string; badge?: string }) => [p.id, p]),
-      );
-      expect(productMap.get('coffee-001')?.badge).toBe('Bán chạy');
-      expect(productMap.get('coffee-003')?.badge).toBe('Mới');
-      expect(productMap.get('tea-001')?.badge).toBe('Yêu thích');
-      expect(productMap.get('coffee-004')?.badge).toBe('Hot Trend');
+  const productMap = new Map<
+    string,
+    { id: string; badge?: string }
+  >(
+    response.body.map(
+      (p: { id: string; badge?: string }) =>
+        [p.id, p] as const,
+    ),
+  );
+
+  expect(productMap.get('coffee-001')?.badge).toBe('Bán chạy');
+  expect(productMap.get('coffee-003')?.badge).toBe('Mới');
+  expect(productMap.get('tea-001')?.badge).toBe('Yêu thích');
+  expect(productMap.get('coffee-004')?.badge).toBe('Hot Trend');
     });
   });
+
+  describe('Task 7: Authentication API', () => {
+    const createEmail = () => `e2e-${randomUUID()}@example.com`;
+    const password = 'Password123!';
+
+    it('POST /auth/register should register a new user', async () => {
+      const email = createEmail();
+
+      const response = await request(app.getHttpServer())
+        .post('/auth/register')
+        .send({ email, password })
+        .expect(201);
+
+      expect(response.body.message).toBe('Đăng ký thành công');
+      expect(response.body.user.email).toBe(email);
+      expect(response.body.user.id).toBeDefined();
+      expect(response.body.user.createdAt).toBeDefined();
+      expect(response.body.user).not.toHaveProperty('passwordHash');
+      expect(response.body.user).not.toHaveProperty('password');
+    });
+
+    it('POST /auth/register should reject duplicate email', async () => {
+      const email = createEmail();
+
+      await request(app.getHttpServer())
+        .post('/auth/register')
+        .send({ email, password })
+        .expect(201);
+
+      const response = await request(app.getHttpServer())
+        .post('/auth/register')
+        .send({ email, password })
+        .expect(400);
+
+      expect(response.body.message).toBe('Email đã được đăng ký');
+    });
+
+    it('POST /auth/login should return a valid JWT', async () => {
+      const email = createEmail();
+
+      await request(app.getHttpServer())
+        .post('/auth/register')
+        .send({ email, password })
+        .expect(201);
+
+      const response = await request(app.getHttpServer())
+        .post('/auth/login')
+        .send({ email, password })
+        .expect(201);
+
+      expect(response.body.message).toBe('Đăng nhập thành công');
+      expect(response.body.accessToken).toBeDefined();
+      expect(response.body.tokenType).toBe('Bearer');
+      expect(response.body.user.email).toBe(email);
+
+      const payload = await app
+        .get(JwtService)
+        .verifyAsync(response.body.accessToken);
+
+      expect(payload.email).toBe(email);
+      expect(payload.sub).toBe(response.body.user.id);
+    });
+
+    it('POST /auth/login should reject incorrect password', async () => {
+      const email = createEmail();
+
+      await request(app.getHttpServer())
+        .post('/auth/register')
+        .send({ email, password })
+        .expect(201);
+
+      const response = await request(app.getHttpServer())
+        .post('/auth/login')
+        .send({ email, password: 'WrongPassword123!' })
+        .expect(401);
+
+      expect(response.body.message).toBe(
+        'Email hoặc mật khẩu không chính xác',
+      );
+    });
+
+    it('POST /auth/login should reject unknown email', async () => {
+      const response = await request(app.getHttpServer())
+        .post('/auth/login')
+        .send({
+          email: createEmail(),
+          password,
+        })
+        .expect(401);
+
+      expect(response.body.message).toBe(
+        'Email hoặc mật khẩu không chính xác',
+      );
+    });
+  });
+
 
   afterEach(async () => {
     await app.close();

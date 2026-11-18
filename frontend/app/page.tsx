@@ -6,14 +6,18 @@ import Footer from '../components/Footer';
 import MenuPage from '../components/MenuPage';
 import Navbar from '../components/Navbar';
 import ToastNotice from '../components/ToastNotice';
+import AuthModal from '../components/AuthModal';
 import { CartProvider, useCart } from '../context/CartContext';
+import { AuthProvider } from '../context/AuthContext';
 import type { CartItemSelection } from '../types/cart';
 import type { Product } from '../types/product';
 
 export default function Home() {
   return (
     <CartProvider>
-      <HomeContent />
+      <AuthProvider>
+        <HomeContent />
+      </AuthProvider>
     </CartProvider>
   );
 }
@@ -22,22 +26,17 @@ function HomeContent() {
   const { addItem, itemCount } = useCart();
   const [notice, setNotice] = useState<string | null>(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
 
   const handleHistoryClick = () => {
-    setNotice(
-      'Chức năng Lịch sử đơn hàng (GET /orders/me) sẽ được triển khai ở Task 9.',
-    );
+    setNotice('Lịch sử đơn hàng sẽ được triển khai ở Task 9.');
   };
 
   const handleAccountClick = () => {
-    setNotice(
-      'Chức năng Tài khoản & Đăng nhập (POST /auth/login) sẽ được triển khai ở Task 7.',
-    );
+    setIsAuthOpen(true);
   };
 
-  const handleNotice = (msg: string) => {
-    setNotice(msg);
-  };
+  const handleNotice = (msg: string) => setNotice(msg);
 
   const handleQuickAdd = (product: Product) => {
     const selection: CartItemSelection = {
@@ -65,6 +64,7 @@ function HomeContent() {
       />
       <Footer />
       {isCartOpen && <CartPanel onClose={() => setIsCartOpen(false)} />}
+      {isAuthOpen && <AuthModal onClose={() => setIsAuthOpen(false)} />}
       <ToastNotice message={notice} onClose={() => setNotice(null)} />
     </div>
   );

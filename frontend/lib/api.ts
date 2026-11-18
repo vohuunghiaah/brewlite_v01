@@ -108,10 +108,17 @@ export function validateProductList(data: unknown): Product[] {
 
 export async function fetchProducts(baseUrl?: string): Promise<Product[]> {
   const url = `${baseUrl ?? getApiBaseUrl()}/products`;
+
+  const token =
+    typeof window !== 'undefined'
+      ? sessionStorage.getItem('brewlite_token')
+      : null;
+
   const response = await fetch(url, {
     method: 'GET',
     headers: {
       Accept: 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     cache: 'no-store',
   });

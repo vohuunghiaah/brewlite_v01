@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Product } from '../../types/product';
 import MenuPage from '../MenuPage';
 import Navbar from '../Navbar';
+import { AuthProvider } from '../../context/AuthContext';
 import type { MenuPageProps } from '../MenuPage';
 
 const MOCK_MENU: Product[] = [
@@ -267,11 +268,13 @@ describe('MenuPage & Component UI Testing', () => {
       const onAccountClick = vi.fn();
 
       render(
-        <Navbar
-          onCartClick={onCartClick}
-          onHistoryClick={onHistoryClick}
-          onAccountClick={onAccountClick}
-        />,
+        <AuthProvider>
+          <Navbar
+            onCartClick={onCartClick}
+            onHistoryClick={onHistoryClick}
+            onAccountClick={onAccountClick}
+          />
+        </AuthProvider>,
       );
 
       // Cart
@@ -290,7 +293,7 @@ describe('MenuPage & Component UI Testing', () => {
 
       // Account
       const accountButton = screen.getByRole('button', {
-        name: /Tài khoản và Đăng nhập/i,
+        name: /Đăng nhập hoặc đăng ký/i,
       });
       fireEvent.click(accountButton);
       expect(onAccountClick).toHaveBeenCalledTimes(1);

@@ -1,8 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
+import { JwtService } from '@nestjs/jwt';
 import { ProductsController } from './products.controller.js';
 import { ProductsService } from './products.service.js';
 import { Product } from './products.types.js';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
 
 describe('ProductsController', () => {
   let controller: ProductsController;
@@ -31,6 +33,13 @@ describe('ProductsController', () => {
             findAll: findAllMock,
           },
         },
+        {
+          provide: JwtService,
+          useValue: {
+            verifyAsync: vi.fn(),
+          },
+        },
+        JwtAuthGuard,
       ],
     }).compile();
 
@@ -44,6 +53,7 @@ describe('ProductsController', () => {
   describe('findAll', () => {
     it('should call productsService.findAll and return the product list', () => {
       const result = controller.findAll();
+
       expect(findAllMock).toHaveBeenCalledTimes(1);
       expect(result).toEqual(mockProducts);
       expect(result).toHaveLength(1);
