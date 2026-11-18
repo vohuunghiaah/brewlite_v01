@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -18,6 +19,7 @@ interface CartContextValue {
   addItem: (selection: CartItemSelection) => void;
   updateQuantity: (key: string, quantity: number) => void;
   removeItem: (key: string) => void;
+  clearCart: () => void;
 }
 
 const CartContext = createContext<CartContextValue | null>(null);
@@ -35,6 +37,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     setItems((currentItems) => {
       const existingItem = currentItems.find((item) => item.key === key);
+
       if (existingItem) {
         return currentItems.map((item) =>
           item.key === key
@@ -61,6 +64,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems((currentItems) => currentItems.filter((item) => item.key !== key));
   }, []);
 
+  // Xóa toàn bộ giỏ hàng sau khi thanh toán thành công
+  const clearCart = useCallback(() => {
+    setItems([]);
+  }, []);
+
   const value = useMemo(
     () => ({
       items,
@@ -72,8 +80,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
       addItem,
       updateQuantity,
       removeItem,
+      clearCart,
     }),
-    [items, addItem, updateQuantity, removeItem],
+    [items, addItem, updateQuantity, removeItem, clearCart],
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
@@ -81,8 +90,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
 export function useCart(): CartContextValue {
   const context = useContext(CartContext);
+
   if (!context) {
     throw new Error('useCart phải được dùng bên trong CartProvider.');
   }
+
   return context;
 }

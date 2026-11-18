@@ -157,3 +157,86 @@ export function filterProducts(
 
   return result;
 }
+
+
+// ===== PAYMENT API (TASK 8) =====
+
+export interface CreateOrderRequest {
+  items: {
+    productId: string;
+    size: 'S' | 'M' | 'L';
+    qty: number;
+    toppings?: string[];
+  }[];
+}
+
+export interface CreateOrderResponse {
+  id: string;
+  status: string;
+  total: number;
+  createdAt: string;
+}
+
+export type PaymentMethod = 'WALLET' | 'CARD';
+
+export interface PaymentResponse {
+  id: string;
+  orderId: string;
+  amount: number;
+  method: PaymentMethod;
+  status: 'SUCCESS' | 'FAILED';
+  transactionId: string;
+  createdAt: string;
+}
+
+// Tạo đơn hàng
+export async function createOrder(
+  data: CreateOrderRequest,
+): Promise<CreateOrderResponse> {
+  const response = await fetch(`${getApiBaseUrl()}/orders`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      result.message || 'Không thể tạo đơn hàng.',
+    );
+  }
+
+  return result as CreateOrderResponse;
+}
+
+// Thanh toán đơn hàng
+export async function processPayment(
+  orderId: string,
+  method: PaymentMethod,
+): Promise<PaymentResponse> {
+  const response = await fetch(`${getApiBaseUrl()}/payments`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    body: JSON.stringify({
+      orderId,
+      method,
+    }),
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      result.message || 'Thanh toán không thành công.',
+    );
+  }
+
+  return result as PaymentResponse;
+}
