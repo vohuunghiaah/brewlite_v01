@@ -107,10 +107,42 @@ describe('BrewLite API (e2e)', () => {
     });
   });
 
-  describe('Task 6: POST /orders', () => {
-    it('POST /orders -> 201 Created, trả về mã đơn và trạng thái PENDING', async () => {
+  describe('Task 6 & Task 7: POST /orders & Route Protection', () => {
+    let authToken: string;
+    let authUserId: string;
+
+    beforeEach(async () => {
+      const authRes = await request(app.getHttpServer())
+        .post('/auth/register')
+        .send({
+          email: `buyer-${Date.now()}@brewlite.vn`,
+          password: 'securepassword123',
+        })
+        .expect(201);
+
+      authToken = authRes.body.accessToken;
+      authUserId = authRes.body.user.id;
+    });
+
+    it('POST /orders -> 401 Unauthorized khi không gửi JWT token', async () => {
+      await request(app.getHttpServer())
+        .post('/orders')
+        .send({
+          items: [
+            {
+              productId: 'coffee-001',
+              size: 'M',
+              qty: 1,
+            },
+          ],
+        })
+        .expect(401);
+    });
+
+    it('POST /orders -> 201 Created khi có JWT token hợp lệ, lưu đúng userId và trạng thái PENDING', async () => {
       const response = await request(app.getHttpServer())
         .post('/orders')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           items: [
             {
@@ -124,6 +156,7 @@ describe('BrewLite API (e2e)', () => {
         .expect(201);
 
       expect(response.body.id).toMatch(/^ORD-\d{8}-[0-9A-F]{4}$/);
+      expect(response.body.userId).toBe(authUserId);
       expect(response.body.status).toBe('PENDING');
       // Cold Brew Muối (42.000) + Size L (12.000) + Kem cheese (10.000) = 64.000
       expect(response.body.total).toBe(64000);
@@ -136,11 +169,13 @@ describe('BrewLite API (e2e)', () => {
     it('POST /orders -> 400 Bad Request khi giỏ hàng rỗng hoặc sai dữ liệu', async () => {
       await request(app.getHttpServer())
         .post('/orders')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({ items: [] })
         .expect(400);
 
       await request(app.getHttpServer())
         .post('/orders')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           items: [{ productId: 'coffee-001', size: 'XL', qty: 0 }],
         })
@@ -148,6 +183,7 @@ describe('BrewLite API (e2e)', () => {
 
       await request(app.getHttpServer())
         .post('/orders')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           items: [
             {
@@ -162,10 +198,92 @@ describe('BrewLite API (e2e)', () => {
 
       await request(app.getHttpServer())
         .post('/orders')
+        .set('Authorization', `Bearer ${authToken}`)
         .send({
           items: [{ productId: 'non-existing-product', size: 'M', qty: 1 }],
         })
         .expect(400);
+    });
+  });
+
+  describe('Task 7: Authentication API (POST /auth/register, POST /auth/login, GET /auth/me)', () => {
+    const testEmail = 'alice@brewlite.vn';
+    const testPassword = 'mysecretpassword';
+
+    it('POST /auth/register -> 201 Created và trả về accessToken kèm thông tin user (ẩn passwordHash)', async () => {
+      const response = await request(app.getHttpServer())
+        .post('/auth/register')
+        .send({ email: testEmail, password: testPassword })
+        .expect(201);
+
+      expect(response.body).toHaveProperty('accessToken');
+      expect(response.body.user).toHaveProperty('id');
+      expect(response.body.user.email).toBe(testEmail);
+      expect(response.body.user.loyaltyPoints).toBe(0);
+      expect(response.body.user.passwordHash).toBeUndefined();
+    });
+
+    it('POST /auth/register -> 409 Conflict khi email đã tồn tại', async () => {
+      await request(app.getHttpServer())
+        .post('/auth/register')
+        .send({ email: 'duplicate@brewlite.vn', password: testPassword })
+        .expect(201);
+
+      const response = await request(app.getHttpServer())
+        .post('/auth/register')
+        .send({ email: 'duplicate@brewlite.vn', password: 'newpassword123' })
+        .expect(409);
+
+      expect(response.body.message).toContain('đã được sử dụng');
+    });
+
+    it('POST /auth/login -> 200 OK và trả về JWT accessToken khi thông tin đúng', async () => {
+      await request(app.getHttpServer())
+        .post('/auth/register')
+        .send({ email: 'login-test@brewlite.vn', password: testPassword })
+        .expect(201);
+
+      const response = await request(app.getHttpServer())
+        .post('/auth/login')
+        .send({ email: 'login-test@brewlite.vn', password: testPassword })
+        .expect(200);
+
+      expect(response.body).toHaveProperty('accessToken');
+      expect(response.body.user.email).toBe('login-test@brewlite.vn');
+    });
+
+    it('POST /auth/login -> 401 Unauthorized khi sai mật khẩu hoặc sai email', async () => {
+      await request(app.getHttpServer())
+        .post('/auth/register')
+        .send({ email: 'login-fail@brewlite.vn', password: testPassword })
+        .expect(201);
+
+      await request(app.getHttpServer())
+        .post('/auth/login')
+        .send({ email: 'login-fail@brewlite.vn', password: 'wrongpassword' })
+        .expect(401);
+
+      await request(app.getHttpServer())
+        .post('/auth/login')
+        .send({ email: 'nonexistent@brewlite.vn', password: testPassword })
+        .expect(401);
+    });
+
+    it('GET /auth/me -> 200 OK trả về thông tin user khi có Bearer token', async () => {
+      const reg = await request(app.getHttpServer())
+        .post('/auth/register')
+        .send({ email: 'me-test@brewlite.vn', password: testPassword })
+        .expect(201);
+
+      const token = reg.body.accessToken;
+
+      const profile = await request(app.getHttpServer())
+        .get('/auth/me')
+        .set('Authorization', `Bearer ${token}`)
+        .expect(200);
+
+      expect(profile.body.email).toBe('me-test@brewlite.vn');
+      expect(profile.body.id).toBe(reg.body.user.id);
     });
   });
 

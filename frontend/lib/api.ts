@@ -159,6 +159,90 @@ export function filterProducts(
 }
 
 
+// ===== AUTH API (TASK 7) =====
+
+export interface AuthUser {
+  id: string;
+  email: string;
+  loyaltyPoints: number;
+  createdAt: string;
+}
+
+export interface AuthResponse {
+  accessToken: string;
+  user: AuthUser;
+}
+
+// Đăng ký tài khoản
+export async function registerUser(
+  email: string,
+  password: string,
+): Promise<AuthResponse> {
+  const response = await fetch(`${getApiBaseUrl()}/auth/register`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    body: JSON.stringify({ email, password }),
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    const errorMsg = Array.isArray(result.message)
+      ? result.message.join(', ')
+      : result.message;
+    throw new Error(errorMsg || 'Đăng ký không thành công.');
+  }
+
+  return result as AuthResponse;
+}
+
+// Đăng nhập
+export async function loginUser(
+  email: string,
+  password: string,
+): Promise<AuthResponse> {
+  const response = await fetch(`${getApiBaseUrl()}/auth/login`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    body: JSON.stringify({ email, password }),
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    const errorMsg = Array.isArray(result.message)
+      ? result.message.join(', ')
+      : result.message;
+    throw new Error(errorMsg || 'Đăng nhập không thành công.');
+  }
+
+  return result as AuthResponse;
+}
+
+// Lấy thông tin user hiện tại
+export async function fetchUserProfile(token: string): Promise<AuthUser> {
+  const response = await fetch(`${getApiBaseUrl()}/auth/me`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/json',
+    },
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.message || 'Không thể lấy thông tin người dùng.');
+  }
+
+  return result as AuthUser;
+}
+
 // ===== PAYMENT API (TASK 8) =====
 
 export interface CreateOrderRequest {
@@ -168,10 +252,12 @@ export interface CreateOrderRequest {
     qty: number;
     toppings?: string[];
   }[];
+  note?: string;
 }
 
 export interface CreateOrderResponse {
   id: string;
+  userId?: string;
   status: string;
   total: number;
   createdAt: string;
@@ -192,13 +278,20 @@ export interface PaymentResponse {
 // Tạo đơn hàng
 export async function createOrder(
   data: CreateOrderRequest,
+  token?: string,
 ): Promise<CreateOrderResponse> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+  };
+
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
   const response = await fetch(`${getApiBaseUrl()}/orders`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-    },
+    headers,
     body: JSON.stringify(data),
   });
 

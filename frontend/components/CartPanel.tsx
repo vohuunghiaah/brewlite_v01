@@ -10,6 +10,8 @@ import {
 } from '../lib/api';
 import type { PaymentMethod } from '../lib/api';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
+import AuthModal from './AuthModal';
 
 interface CartPanelProps {
   onClose: () => void;
@@ -23,6 +25,9 @@ export default function CartPanel({ onClose }: CartPanelProps) {
     removeItem,
     clearCart,
   } = useCart();
+
+  const { token, isAuthenticated } = useAuth();
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
 
   const [paymentMethod, setPaymentMethod] =
     useState<PaymentMethod>('WALLET');
@@ -39,6 +44,11 @@ export default function CartPanel({ onClose }: CartPanelProps) {
   const handlePayment = async () => {
     if (items.length === 0 || isPaying) return;
 
+    if (!isAuthenticated) {
+      setIsAuthOpen(true);
+      return;
+    }
+
     setIsPaying(true);
     setError(null);
 
@@ -53,8 +63,8 @@ export default function CartPanel({ onClose }: CartPanelProps) {
         })),
       };
 
-      // 2. Tạo đơn hàng
-      const order = await createOrder(orderData);
+      // 2. Tạo đơn hàng (gửi kèm token xác thực)
+      const order = await createOrder(orderData, token ?? undefined);
 
       // 3. Thực hiện thanh toán
       const payment = await processPayment(
@@ -368,6 +378,16 @@ export default function CartPanel({ onClose }: CartPanelProps) {
           </>
         )}
       </section>
+
+      {isAuthOpen && (
+        <AuthModal
+          isOpen={isAuthOpen}
+          onClose={() => setIsAuthOpen(false)}
+          onSuccess={() => {
+            setIsAuthOpen(false);
+          }}
+        />
+      )}
     </div>
   );
 }
