@@ -29,7 +29,7 @@ describe('OrdersController', () => {
   };
 
   beforeEach(async () => {
-    createMock = vi.fn().mockReturnValue(mockOrder);
+    createMock = vi.fn().mockResolvedValue(mockOrder);
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [OrdersController],
@@ -38,6 +38,7 @@ describe('OrdersController', () => {
           provide: OrdersService,
           useValue: {
             create: createMock,
+            findByUserId: vi.fn().mockResolvedValue([mockOrder]),
           },
         },
       ],
@@ -51,7 +52,7 @@ describe('OrdersController', () => {
   });
 
   describe('create', () => {
-    it('should call ordersService.create with dto and userId and return the created order', () => {
+    it('should call ordersService.create with dto and userId and return the created order', async () => {
       const dto: CreateOrderDto = {
         items: [
           {
@@ -64,10 +65,14 @@ describe('OrdersController', () => {
         note: 'Ít đường',
       };
 
-      const result = controller.create(dto, 'USR-001');
+      const result = await controller.create(dto, 'USR-001');
       expect(createMock).toHaveBeenCalledWith(dto, 'USR-001');
       expect(result).toEqual(mockOrder);
       expect(result.status).toBe(OrderStatus.PENDING);
+    });
+
+    it('returns only the authenticated user orders', async () => {
+      await expect(controller.findMine('USR-001')).resolves.toEqual([mockOrder]);
     });
   });
 });

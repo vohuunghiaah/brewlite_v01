@@ -33,7 +33,7 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Get('me')
   @HttpCode(HttpStatus.OK)
-  getProfile(@CurrentUser() user: SafeUser): SafeUser {
-    return user;
+  async getProfile(@CurrentUser('id') userId: string): Promise<SafeUser> {
+    return this.authService.getProfile(userId);
   }
 }

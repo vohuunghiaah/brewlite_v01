@@ -5,6 +5,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { randomBytes } from 'node:crypto';
+import { Prisma } from '@prisma/client';
+import { PrismaService } from '../prisma/prisma.service.js';
 import { ProductsService } from '../products/products.service.js';
 import { CreateOrderDto } from './dto/create-order.dto.js';
 import {
@@ -17,11 +19,12 @@ import {
 
 @Injectable()
 export class OrdersService {
-  private readonly orders: Order[] = [];
+  constructor(
+    private readonly productsService: ProductsService,
+    private readonly prisma: PrismaService,
+  ) {}
 
-  constructor(private readonly productsService: ProductsService) {}
-
-  create(dto: CreateOrderDto, userId?: string): Order {
+  async create(dto: CreateOrderDto, userId?: string): Promise<Order> {
     const products = this.productsService.findAll();
     const productMap = new Map(products.map((p) => [p.id, p]));
 
@@ -61,54 +64,117 @@ export class OrdersService {
       0,
     );
 
-    const newOrder: Order = Object.freeze({
+    const newOrder = {
       id: this.generateOrderCode(),
-      ...(userId ? { userId } : {}),
+      userId: userId ?? null,
       status: OrderStatus.PENDING,
-      items: Object.freeze(orderItems),
+      items: orderItems,
       total,
-      ...(dto.note?.trim() ? { note: dto.note.trim() } : {}),
-      createdAt: new Date().toISOString(),
+      note: dto.note?.trim() || null,
+    };
+
+    const order = await this.prisma.order.create({
+      data: {
+        ...newOrder,
+        items: {
+          create: orderItems.map((item) => ({
+            productId: item.productId,
+            productName: item.productName,
+            size: item.size,
+            toppings: [...item.toppings],
+            qty: item.qty,
+            unitPrice: item.unitPrice,
+            lineTotal: item.lineTotal,
+          })),
+        },
+      },
+      include: { items: true },
     });
 
-    this.orders.push(newOrder);
-
-    return newOrder;
+    return this.toOrder(order);
   }
 
-  findAll(): readonly Order[] {
-    return Object.freeze([...this.orders]);
+  async findAll(): Promise<readonly Order[]> {
+    const orders = await this.prisma.order.findMany({
+      include: { items: true },
+      orderBy: { createdAt: 'desc' },
+    });
+    return orders.map((order) => this.toOrder(order));
   }
 
-  findById(id: string): Order | undefined {
-    return this.orders.find((order) => order.id === id);
+  async findById(id: string): Promise<Order | undefined> {
+    const order = await this.prisma.order.findUnique({
+      where: { id },
+      include: { items: true },
+    });
+    return order ? this.toOrder(order) : undefined;
   }
 
-  // Cập nhật trạng thái thanh toán của đơn hàng
-  updatePaymentStatus(
+  async findByUserId(userId: string): Promise<readonly Order[]> {
+    const orders = await this.prisma.order.findMany({
+      where: { userId },
+      include: { items: true },
+      orderBy: { createdAt: 'desc' },
+    });
+    return orders.map((order) => this.toOrder(order));
+  }
+
+  async updatePaymentStatus(
     id: string,
     status: OrderStatus.PAID | OrderStatus.PAYMENT_FAILED,
-  ): Order {
-    const orderIndex = this.orders.findIndex(
-      (order) => order.id === id,
-    );
-
-    if (orderIndex === -1) {
-      throw new NotFoundException(
-        `Không tìm thấy đơn hàng '${id}'.`,
-      );
+  ): Promise<Order> {
+    try {
+      const order = await this.prisma.order.update({
+        where: { id },
+        data: { status },
+        include: { items: true },
+      });
+      return this.toOrder(order);
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2025'
+      ) {
+        throw new NotFoundException(`Không tìm thấy đơn hàng '${id}'.`);
+      }
+      throw error;
     }
+  }
 
-    const currentOrder = this.orders[orderIndex];
-
-    const updatedOrder: Order = Object.freeze({
-      ...currentOrder,
-      status,
+  private toOrder(order: {
+    id: string;
+    userId: string | null;
+    status: string;
+    total: number;
+    note: string | null;
+    createdAt: Date;
+    items: {
+      productId: string;
+      productName: string;
+      size: string;
+      toppings: string[];
+      qty: number;
+      unitPrice: number;
+      lineTotal: number;
+    }[];
+  }): Order {
+    return Object.freeze({
+      id: order.id,
+      ...(order.userId ? { userId: order.userId } : {}),
+      status: order.status as OrderStatus,
+      items: Object.freeze(
+        order.items.map((item) =>
+          Object.freeze({
+            ...item,
+            size: item.size as OrderItem['size'],
+            toppings: Object.freeze([...item.toppings]),
+          }),
+        ),
+      ),
+      total: order.total,
+      ...(order.note ? { note: order.note } : {}),
+      createdAt: order.createdAt.toISOString(),
     });
-
-    this.orders[orderIndex] = updatedOrder;
-
-    return updatedOrder;
   }
 
   private generateOrderCode(): string {

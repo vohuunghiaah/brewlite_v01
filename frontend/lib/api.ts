@@ -275,6 +275,58 @@ export interface PaymentResponse {
   createdAt: string;
 }
 
+export interface OrderHistoryItem {
+  productId: string;
+  productName: string;
+  size: 'S' | 'M' | 'L';
+  toppings: string[];
+  qty: number;
+  unitPrice: number;
+  lineTotal: number;
+}
+
+export interface OrderHistory {
+  id: string;
+  status:
+    | 'PENDING'
+    | 'PAID'
+    | 'PAYMENT_FAILED'
+    | 'PREPARING'
+    | 'READY'
+    | 'COMPLETED'
+    | 'CANCELLED';
+  items: OrderHistoryItem[];
+  total: number;
+  note?: string;
+  createdAt: string;
+}
+
+export async function fetchMyOrders(token: string): Promise<OrderHistory[]> {
+  const response = await fetch(`${getApiBaseUrl()}/orders/me`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/json',
+    },
+    cache: 'no-store',
+  });
+  const result: unknown = await response.json();
+
+  if (!response.ok) {
+    const error = result as { message?: string | string[] };
+    throw new Error(
+      Array.isArray(error.message)
+        ? error.message.join(', ')
+        : error.message || 'Không thể tải lịch sử đơn hàng.',
+    );
+  }
+
+  if (!Array.isArray(result)) {
+    throw new Error('Dữ liệu lịch sử đơn hàng không hợp lệ.');
+  }
+
+  return result as OrderHistory[];
+}
+
 // Tạo đơn hàng
 export async function createOrder(
   data: CreateOrderRequest,

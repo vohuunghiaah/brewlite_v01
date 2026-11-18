@@ -8,6 +8,7 @@ describe('AuthController', () => {
   let controller: AuthController;
   let registerMock: ReturnType<typeof vi.fn>;
   let loginMock: ReturnType<typeof vi.fn>;
+  let getProfileMock: ReturnType<typeof vi.fn>;
 
   const mockSafeUser: SafeUser = {
     id: 'USR-ABCD1234',
@@ -24,6 +25,7 @@ describe('AuthController', () => {
   beforeEach(async () => {
     registerMock = vi.fn().mockResolvedValue(mockAuthResponse);
     loginMock = vi.fn().mockResolvedValue(mockAuthResponse);
+    getProfileMock = vi.fn().mockResolvedValue(mockSafeUser);
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AuthController],
@@ -33,6 +35,7 @@ describe('AuthController', () => {
           useValue: {
             register: registerMock,
             login: loginMock,
+            getProfile: getProfileMock,
           },
         },
       ],
@@ -64,8 +67,9 @@ describe('AuthController', () => {
   });
 
   describe('getProfile', () => {
-    it('trả về user hiện tại', () => {
-      const result = controller.getProfile(mockSafeUser);
+    it('trả về user hiện tại', async () => {
+      const result = await controller.getProfile(mockSafeUser.id);
+      expect(getProfileMock).toHaveBeenCalledWith(mockSafeUser.id);
       expect(result).toEqual(mockSafeUser);
     });
   });

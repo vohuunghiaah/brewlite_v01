@@ -20,7 +20,7 @@ export class PaymentsController {
   @HttpCode(HttpStatus.OK)
   processPayment(
     @Body() createPaymentDto: CreatePaymentDto,
-  ): Payment {
+  ): Promise<Payment> {
     return this.paymentsService.processPayment(
       createPaymentDto,
     );

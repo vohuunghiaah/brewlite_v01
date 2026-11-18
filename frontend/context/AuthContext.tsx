@@ -19,6 +19,7 @@ interface AuthContextValue {
   user: AuthUser | null;
   token: string | null;
   isAuthenticated: boolean;
+  isReady: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string) => Promise<void>;
   logout: () => void;
@@ -32,12 +33,15 @@ const USER_KEY = 'brewlite_auth_user';
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
     try {
       const storedToken = localStorage.getItem(TOKEN_KEY);
       const storedUser = localStorage.getItem(USER_KEY);
       if (storedToken && storedUser) {
+        // Client-only auth hydration avoids a server/client render mismatch.
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setToken(storedToken);
         setUser(JSON.parse(storedUser));
         // Verify token in background
@@ -50,6 +54,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     } catch {
       // Ignore storage errors in non-browser env
+    } finally {
+      setIsReady(true);
     }
   }, []);
 
@@ -94,6 +100,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user,
         token,
         isAuthenticated: !!token && !!user,
+        isReady,
         login,
         register,
         logout,
@@ -111,6 +118,7 @@ export function useAuth(): AuthContextValue {
       user: null,
       token: null,
       isAuthenticated: false,
+      isReady: false,
       login: async () => {},
       register: async () => {},
       logout: () => {},

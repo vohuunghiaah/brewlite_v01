@@ -14,8 +14,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  validate(payload: JwtPayload): SafeUser {
-    const user = this.authService.findUserById(payload.sub);
+  async validate(payload: JwtPayload): Promise<SafeUser> {
+    const user = await this.authService.findUserById(payload.sub);
     if (!user) {
       throw new UnauthorizedException(
         'Tài khoản không tồn tại hoặc phiên làm việc đã hết hạn.',
