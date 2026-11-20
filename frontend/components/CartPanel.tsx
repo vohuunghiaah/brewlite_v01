@@ -70,6 +70,7 @@ export default function CartPanel({ onClose }: CartPanelProps) {
       const payment = await processPayment(
         order.id,
         paymentMethod,
+        `checkout:${order.id}:${paymentMethod}`,
       );
 
       // 4. Kiểm tra kết quả thanh toán

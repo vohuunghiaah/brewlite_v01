@@ -48,4 +48,5 @@ export interface Order {
   readonly total: number;
   readonly note?: string;
   readonly createdAt: string;
+  readonly loyaltyPointsAwarded?: number;
 }
