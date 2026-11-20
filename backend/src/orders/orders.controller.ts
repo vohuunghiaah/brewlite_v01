@@ -4,12 +4,15 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Param,
+  Patch,
   Post,
   UseGuards,
 } from '@nestjs/common';
 import { CurrentUser } from '../auth/current-user.decorator.js';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
 import { CreateOrderDto } from './dto/create-order.dto.js';
+import { UpdateOrderStatusDto } from './dto/update-order-status.dto.js';
 import { OrdersService } from './orders.service.js';
 import type { Order } from './orders.types.js';
 
@@ -31,5 +34,14 @@ export class OrdersController {
     @CurrentUser('id') userId?: string,
   ): Promise<Order> {
     return this.ordersService.create(createOrderDto, userId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch(':id/status')
+  updateStatus(
+    @Param('id') id: string,
+    @Body() dto: UpdateOrderStatusDto,
+  ): Promise<Order> {
+    return this.ordersService.transitionStatus(id, dto.status);
   }
 }

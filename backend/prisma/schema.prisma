@@ -38,11 +38,31 @@ model Order {
   status    OrderStatus @default(PENDING)
   total     Int
   note      String?
+  loyaltyPointsAwarded Int @default(0)
   createdAt DateTime    @default(now())
   user      User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
   items     OrderItem[]
+  payment   Payment?
 
   @@index([userId, createdAt])
+}
+
+model Inventory {
+  productId String @id
+  stock     Int
+  updatedAt DateTime @updatedAt
+}
+
+model Payment {
+  id             String        @id
+  orderId        String        @unique
+  idempotencyKey String        @unique
+  amount         Int
+  method         String
+  status         String
+  transactionId  String
+  createdAt      DateTime      @default(now())
+  order          Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
 }
 
 model OrderItem {

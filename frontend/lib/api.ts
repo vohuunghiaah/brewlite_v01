@@ -362,6 +362,7 @@ export async function createOrder(
 export async function processPayment(
   orderId: string,
   method: PaymentMethod,
+  idempotencyKey?: string,
 ): Promise<PaymentResponse> {
   const response = await fetch(`${getApiBaseUrl()}/payments`, {
     method: 'POST',
@@ -372,6 +373,7 @@ export async function processPayment(
     body: JSON.stringify({
       orderId,
       method,
+      ...(idempotencyKey ? { idempotencyKey } : {}),
     }),
   });
 

@@ -8,16 +8,40 @@ import { randomUUID } from 'node:crypto';
 import { OrdersService } from '../orders/orders.service.js';
 import { OrderStatus } from '../orders/orders.types.js';
 import { CreatePaymentDto } from './dto/create-payment.dto.js';
-import { PaymentStatus } from './payments.types.js';
+import { PaymentMethod, PaymentStatus } from './payments.types.js';
 import type { Payment } from './payments.types.js';
+import { PrismaService } from '../prisma/prisma.service.js';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class PaymentsService {
   private readonly payments: Payment[] = [];
 
-  constructor(private readonly ordersService: OrdersService) {}
+  constructor(
+    private readonly ordersService: OrdersService,
+    private readonly prisma: PrismaService,
+  ) {}
 
   async processPayment(dto: CreatePaymentDto): Promise<Payment> {
+    const idempotencyKey =
+      dto.idempotencyKey ?? `payment:${dto.orderId}:${dto.method}`;
+
+    const existing = await this.prisma.payment.findUnique({
+      where: { idempotencyKey },
+    }).catch(() => null);
+
+    if (existing) {
+      return Object.freeze({
+        id: existing.id,
+        orderId: existing.orderId,
+        amount: existing.amount,
+        method: existing.method as PaymentMethod,
+        status: existing.status as PaymentStatus,
+        transactionId: existing.transactionId,
+        createdAt: existing.createdAt.toISOString(),
+      });
+    }
+
     // 1. Tìm đơn hàng cần thanh toán
     const order = await this.ordersService.findById(dto.orderId);
 
@@ -52,15 +76,54 @@ export class PaymentsService {
       createdAt: new Date().toISOString(),
     });
 
-    // 5. Cập nhật trạng thái đơn hàng
-    await this.ordersService.updatePaymentStatus(
-      order.id,
-      isSuccessful
-        ? OrderStatus.PAID
-        : OrderStatus.PAYMENT_FAILED,
-    );
+    // 5. Cập nhật trạng thái và lưu giao dịch trong một transaction
+    await this.prisma.$transaction(async (tx) => {
+      await tx.payment.create({
+        data: {
+          id: payment.id,
+          orderId: payment.orderId,
+          idempotencyKey,
+          amount: payment.amount,
+          method: payment.method,
+          status: payment.status,
+          transactionId: payment.transactionId,
+          createdAt: new Date(payment.createdAt),
+        },
+      });
 
-    // 6. Lưu giao dịch
+      await tx.order.update({
+        where: { id: order.id },
+        data: {
+          status: isSuccessful
+            ? OrderStatus.PAID
+            : OrderStatus.PAYMENT_FAILED,
+        },
+      });
+
+      if (isSuccessful && order.userId) {
+        const points = Math.floor(order.total / 10000);
+        await tx.order.update({
+          where: { id: order.id },
+          data: { loyaltyPointsAwarded: points },
+        });
+        await tx.user.update({
+          where: { id: order.userId },
+          data: { loyaltyPoints: { increment: points } },
+        });
+      }
+    }).catch((error) => {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
+        throw new BadRequestException(
+          'Giao dịch thanh toán đã được xử lý hoặc idempotency key bị trùng.',
+        );
+      }
+      throw error;
+    });
+
+    // 6. Giữ lại bộ nhớ trong tiến trình để tương thích API findAll
     this.payments.push(payment);
 
     return payment;

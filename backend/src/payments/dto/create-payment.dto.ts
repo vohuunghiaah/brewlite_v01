@@ -1,5 +1,5 @@
 
-import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { PaymentMethod } from '../payments.types.js';
 
 export class CreatePaymentDto {
@@ -11,4 +11,9 @@ export class CreatePaymentDto {
     message: 'method phải là WALLET hoặc CARD',
   })
   method!: PaymentMethod;
+
+  @IsOptional()
+  @IsString({ message: 'idempotencyKey phải là chuỗi' })
+  @IsNotEmpty({ message: 'idempotencyKey không được để trống' })
+  idempotencyKey?: string;
 }

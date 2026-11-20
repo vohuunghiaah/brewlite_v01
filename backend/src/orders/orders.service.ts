@@ -1,6 +1,7 @@
 
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -73,23 +74,75 @@ export class OrdersService {
       note: dto.note?.trim() || null,
     };
 
-    const order = await this.prisma.order.create({
-      data: {
-        ...newOrder,
-        items: {
-          create: orderItems.map((item) => ({
-            productId: item.productId,
-            productName: item.productName,
-            size: item.size,
-            toppings: [...item.toppings],
-            qty: item.qty,
-            unitPrice: item.unitPrice,
-            lineTotal: item.lineTotal,
-          })),
+    const order = typeof this.prisma.$transaction === 'function'
+      ? await this.prisma.$transaction(async (tx) => {
+      const inventory = (
+        tx as typeof tx & {
+          inventory?: {
+            findUnique(args: unknown): Promise<{ stock: number } | null>;
+            upsert(args: unknown): Promise<{ stock: number }>;
+            updateMany(args: unknown): Promise<{ count: number }>;
+          };
+        }
+      ).inventory;
+
+      for (const item of orderItems) {
+        if (inventory) {
+          await inventory.upsert({
+            where: { productId: item.productId },
+            create: { productId: item.productId, stock: 100 },
+            update: {},
+          });
+          const result = await inventory.updateMany({
+            where: {
+              productId: item.productId,
+              stock: { gte: item.qty },
+            },
+            data: { stock: { decrement: item.qty } },
+          });
+          if (result.count !== 1) {
+            throw new ConflictException(
+              `Sản phẩm '${item.productName}' không đủ tồn kho.`,
+            );
+          }
+        }
+      }
+
+      return tx.order.create({
+        data: {
+          ...newOrder,
+          items: {
+            create: orderItems.map((item) => ({
+              productId: item.productId,
+              productName: item.productName,
+              size: item.size,
+              toppings: [...item.toppings],
+              qty: item.qty,
+              unitPrice: item.unitPrice,
+              lineTotal: item.lineTotal,
+            })),
+          },
         },
-      },
-      include: { items: true },
-    });
+        include: { items: true },
+      });
+      })
+      : await this.prisma.order.create({
+          data: {
+            ...newOrder,
+            items: {
+              create: orderItems.map((item) => ({
+                productId: item.productId,
+                productName: item.productName,
+                size: item.size,
+                toppings: [...item.toppings],
+                qty: item.qty,
+                unitPrice: item.unitPrice,
+                lineTotal: item.lineTotal,
+              })),
+            },
+          },
+          include: { items: true },
+        });
 
     return this.toOrder(order);
   }
@@ -141,6 +194,60 @@ export class OrdersService {
     }
   }
 
+  async transitionStatus(
+    id: string,
+    nextStatus: OrderStatus,
+  ): Promise<Order> {
+    const order = await this.findById(id);
+    if (!order) {
+      throw new NotFoundException(`Không tìm thấy đơn hàng '${id}'.`);
+    }
+
+    const allowed: Readonly<Record<OrderStatus, readonly OrderStatus[]>> =
+      Object.freeze({
+        [OrderStatus.PENDING]: [OrderStatus.CANCELLED, OrderStatus.PAID],
+        [OrderStatus.PAID]: [OrderStatus.PREPARING, OrderStatus.CANCELLED],
+        [OrderStatus.PAYMENT_FAILED]: [OrderStatus.PENDING, OrderStatus.CANCELLED],
+        [OrderStatus.PREPARING]: [OrderStatus.READY, OrderStatus.CANCELLED],
+        [OrderStatus.READY]: [OrderStatus.COMPLETED, OrderStatus.CANCELLED],
+        [OrderStatus.COMPLETED]: [],
+        [OrderStatus.CANCELLED]: [],
+      });
+
+    if (!allowed[order.status].includes(nextStatus)) {
+      throw new BadRequestException(
+        `Không thể chuyển đơn hàng từ '${order.status}' sang '${nextStatus}'.`,
+      );
+    }
+
+    try {
+      const updated = await this.prisma.$transaction(async (tx) => {
+        if (nextStatus === OrderStatus.CANCELLED && order.status !== OrderStatus.CANCELLED) {
+          for (const item of order.items) {
+            await tx.inventory.update({
+              where: { productId: item.productId },
+              data: { stock: { increment: item.qty } },
+            }).catch(() => undefined);
+          }
+        }
+        return tx.order.update({
+          where: { id },
+          data: { status: nextStatus },
+          include: { items: true },
+        });
+      });
+      return this.toOrder(updated);
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2025'
+      ) {
+        throw new NotFoundException(`Không tìm thấy đơn hàng '${id}'.`);
+      }
+      throw error;
+    }
+  }
+
   private toOrder(order: {
     id: string;
     userId: string | null;
@@ -148,6 +255,7 @@ export class OrdersService {
     total: number;
     note: string | null;
     createdAt: Date;
+    loyaltyPointsAwarded?: number;
     items: {
       productId: string;
       productName: string;
@@ -173,6 +281,7 @@ export class OrdersService {
       ),
       total: order.total,
       ...(order.note ? { note: order.note } : {}),
+      loyaltyPointsAwarded: order.loyaltyPointsAwarded ?? 0,
       createdAt: order.createdAt.toISOString(),
     });
   }

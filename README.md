@@ -326,6 +326,13 @@ npm run build:backend
 - [x] Frontend, backend, lint và build kiểm thử thành công.
 - [ ] Tạo commit Git và PR được nhóm review.
 
+### Task 10 — Nghiệp vụ nâng cao (Triển khai hoàn tất)
+- [x] Order State Machine kiểm soát chuyển trạng thái hợp lệ.
+- [x] Thanh toán idempotent bằng `idempotencyKey`, kèm ràng buộc duy nhất trong Prisma.
+- [x] Kiểm soát tồn kho đồng thời bằng transaction và kiểm tra stock trong `updateMany`.
+- [x] Cộng Loyalty Points theo đơn thanh toán thành công và lưu số điểm đã cộng trên đơn.
+- [x] Hoàn trả tồn kho khi đơn bị hủy.
+
 ---
 
 ## 12. Kế hoạch các Task tiếp theo (Product Backlog)
